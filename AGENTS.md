@@ -12,4 +12,10 @@ marketmeet2026/
 ├── meeting-notes/     # 每週會議紀錄
 ├── output/            # 產出檔案
 └── scripts/           # 自動化腳本
+
+## Obsidian 同步對照
+
+| 位置 | 對應 |
+|------|------|
+| `meeting-notes/` | Obsidian `專案/marketmeet2026-工作筆記.md` |
 ```
