@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>花蓮地區 — 預拌混凝土同業競爭力地圖</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+#header {
+  background: #1a3a5c; color: white; padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 1000;
+}
+#header h1 { font-size: 18px; font-weight: 600; }
+#header span { font-size: 13px; opacity: 0.8; }
+#map { height: calc(100vh - 50px); width: 100%; }
+.legend {
+  background: white; padding: 12px; border-radius: 6px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+  font-size: 13px; line-height: 1.6; max-height: 400px; overflow-y: auto;
+}
+.legend h4 { margin-bottom: 6px; font-size: 14px; }
+.legend i { width: 14px; height: 14px; display: inline-block; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.legend .row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+.popup-content { font-size: 13px; line-height: 1.5; }
+.popup-content .name { font-weight: 700; font-size: 14px; color: #1a3a5c; }
+.popup-content .detail { color: #555; margin-top: 2px; }
+.popup-content .scale { margin-top: 4px; }
+.popup-content .rel-title { font-weight: 700; font-size: 13px; color: #1a3a5c; margin-top: 8px; padding-top: 6px; border-top: 1px solid #ddd; }
+.popup-content .rel-node { margin-left: 10px; font-size: 12px; line-height: 1.7; }
+.popup-content .rel-company { color: #2c6b9e; font-weight: 600; }
+.popup-content .rel-person { color: #8b6b2c; }
+.popup-content .rel-arrow { color: #999; margin: 0 4px; }
+.popup-content .rel-sub { margin-left: 20px; font-size: 12px; color: #666; }
+.popup-content .rel-graph { margin: 4px 0; text-align: center; overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>花蓮地區 — 預拌混凝土同業競爭力地圖</h1>
+  <span>資料日期：2026-06-01</span>
+</div>
+<div id="map"></div>
+
+<script>
+const map = L.map('map', { zoomControl: true }).setView([23.85, 121.45], 10);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
+  maxZoom: 18
+}).addTo(map);
+
+const markers = [
+  // === 五星：全國性大廠 ===
+  {
+    name: '亞東預拌混凝土（美崙廠）', addr: '花蓮市美工三街12號',
+    lat: 23.9932, lng: 121.6170, scale: '★★★★★ 全國性大廠', group: '5star',
+    detail: '母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜負責人：李坤炎(母公司董事長)、徐建雄(廠長)｜產能：180m³/h｜ISO9001、碳足跡認證｜2025 APEA亞太企業獎'
+  },
+  {
+    name: '台灣水泥花蓮廠（預拌混凝土工場）', addr: '花蓮市民孝里精美路2-1號',
+    lat: 23.9945, lng: 121.6225, scale: '★★★★★ 台泥集團', group: '5star',
+    detail: '台泥集團｜預拌工場登記1994年｜廠長劉志仁｜花蓮另有水泥廠(華東103號)、和平UHPC中心(2023啟用)、台北水泥製品廠花蓮分廠(2025新設)｜全台最大水泥集團'
+  },
+  // === 四星：全台布點 ===
+  {
+    name: '鳳勝實業（花蓮廠）', addr: '花蓮市美工五街3號',
+    lat: 23.9920, lng: 121.6175, scale: '★★★★☆ 全台布點', group: '4star',
+    detail: '母公司資本額6億｜股東：台泥+官田鋼鐵｜1965年砂石運輸起家，1997年重整｜全台11預拌廠+2砂石廠｜花蓮另有第二廠(5號)+壽豐廠｜負責人黃健強(母公司)、林棟樑(廠長)'
+  },
+  // === 三星：地區中型廠 ===
+  {
+    name: '鼎泰興預拌混凝土', addr: '新城鄉新城村新興一路1巷6號',
+    lat: 24.0370, lng: 121.6015, scale: '★★★☆☆ 地區中型廠', group: '3star',
+    detail: '資本額4,100萬｜2003年設立(原名龍華預拌)｜負責人黃銘華｜工廠：秀林鄉和工四路12號',
+    relations: null
+  },
+  {
+    name: '威神企業', addr: '吉安鄉光華村華城六街35號',
+    lat: 23.9485, lng: 121.5770, scale: '★★★☆☆ 複合型業者', group: '3star',
+    detail: '資本額4,800萬｜1987年設立｜負責人梁億宏｜預拌+土石採取+廢棄物清除｜標案14件｜含砂石碎解洗選場',
+    relations: [{me:'威神企業', members:[{name:'梁億宏', role:'董事長', companies:['威神企業','億鍠營造']},{name:'陳月嬌', role:'董事', companies:['威神企業']},{name:'陳玉官', role:'董事', companies:['威神企業']}]}]
+  },
+  {
+    name: '友誠有限公司', addr: '秀林鄉和平村和平30-11號',
+    lat: 24.3090, lng: 121.7495, scale: '★★★☆☆ 預拌+瀝青', group: '3star',
+    detail: '資本額3,000萬｜1994年設立｜負責人方來興｜友正集團關係企業｜含預拌+瀝青製造｜和平工業區',
+    relations: [{me:'友誠有限公司', members:[{name:'方來興', role:'負責人', companies:['友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}]
+  },
+  // 國產建材實業花蓮廠 — 已結束營運
+  // 台亞預拌混凝土廠 — 已結束營運
+  // === 二星：地方小型廠 ===
+  {
+    name: '花建實業', addr: '鳳林鎮榮開路39-1號',
+    lat: 23.7450, lng: 121.4490, scale: '★★☆☆☆ 南花蓮地方廠', group: '2star',
+    detail: '資本額1,800萬｜1990年設立｜負責人陳東堯(前負責人方來興)｜友正集團關聯企業',
+    relations: [{me:'花建實業', members:[{name:'陳東堯', role:'負責人', companies:['花建實業','友正預拌混凝廠(監察人)','友正貨運']},{name:'方來興', role:'前負責人', companies:['花建實業(前)','友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}]
+  },
+  {
+    name: '友正預拌混凝廠', addr: '吉安鄉光華村華工六路31巷2號',
+    lat: 23.9470, lng: 121.5760, scale: '★★☆☆☆ 友正集團', group: '2star',
+    detail: '資本額2,000萬｜1992年設立｜含崇德廠(秀林)+光復廠｜標案1件(和平工業區)',
+    relations: [{me:'友正預拌混凝廠', members:[{name:'馮志緯', role:'董事長', companies:['友正預拌混凝廠','友正貨運(監察人)']},{name:'方來興', role:'董事', companies:['友正預拌混凝廠','友誠','友砂預拌廠','友正貨運','友華加油站']},{name:'方彥翔', role:'董事', companies:['友正預拌混凝廠','友砂預拌廠','友正砂石','方嘉建設']},{name:'林化應', role:'董事', companies:['友正預拌混凝廠','友正貨運']},{name:'陳東堯', role:'監察人', companies:['友正預拌混凝廠','花建實業','友正貨運']}]}]
+  },
+  {
+    name: '長雄預拌混凝土廠', addr: '吉安鄉仁安村南海四街148號',
+    lat: 23.9745, lng: 121.5980, scale: '★★☆☆☆ 小型廠', group: '2star',
+    detail: '資本額500萬｜1973年設立(50年老廠)｜邱氏家族企業(持股86%)｜關係企業：長旭建設、長旭交通',
+    relations: [{me:'長雄預拌混凝土廠', members:[{name:'邱豐娥', role:'董事長', companies:['長雄預拌混凝土廠','長旭建設']},{name:'邱雪萍', role:'董事', companies:['長雄預拌混凝土廠']},{name:'邱如茵', role:'董事', companies:['長雄預拌混凝土廠']},{name:'邱錫樑', role:'監察人', companies:['長雄預拌混凝土廠','長旭交通']}]}]
+  },
+  // === 二星（續） ===
+  {
+    name: '友砂預拌廠', addr: '花蓮市國裕里富裕十街50巷17號',
+    lat: 23.9930, lng: 121.5950, scale: '★★☆☆☆ 友正集團', group: '2star',
+    detail: '資本額2,000萬｜1998年設立｜友正集團關係企業',
+    relations: [{me:'友砂預拌廠', members:[{name:'方冠儒', role:'負責人', companies:['友砂預拌廠']},{name:'方來興', role:'董事', companies:['友砂預拌廠','友正預拌混凝廠','友誠','友正貨運','友華加油站']},{name:'方彥翔', role:'董事', companies:['友砂預拌廠','友正預拌混凝廠','友正砂石','方嘉建設']}]}]
+  },
+  // === 一星：新成立/微型 ===
+  {
+    name: '大元預拌混凝土', addr: '吉安鄉仁安村南海七街47號',
+    lat: 23.9670, lng: 121.6035, scale: '★☆☆☆☆ 新成立（2022）', group: '1star',
+    detail: '資本額500萬｜2022年新設｜負責人温茗勝｜工廠：玉里鎮新民8-1號(涵蓋南花蓮)｜關係企業：大元行、芊成工程',
+    relations: [{me:'大元預拌混凝土', members:[{name:'温茗勝', role:'負責人', companies:['大元預拌混凝土','大元行','芊成工程']}]}]
+  }
+];
+
+const colors = {
+  '5star': '#e74c3c',
+  '4star': '#e67e22',
+  '3star': '#f1c40f',
+  '2star': '#3498db',
+  '1star': '#95a5a6'
+};
+
+const scaleLabels = {
+  '5star': '★★★★★ 全國性大廠',
+  '4star': '★★★★☆ 全台布點',
+  '3star': '★★★☆☆ 地區中型廠',
+  '2star': '★★☆☆☆ 地方小型廠',
+  '1star': '★☆☆☆☆ 微型／新成立'
+};
+
+markers.forEach(m => {
+  const color = colors[m.group];
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:20px;height:20px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+    popupAnchor: [0, -14]
+  });
+
+  const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
+  marker.bindTooltip(m.name, { direction: 'top', offset: [0, -8], opacity: 0.95 });
+
+  let popupHtml = `
+    <div class="popup-content">
+      <div class="name">${m.name}</div>
+      <div class="detail">${m.addr}</div>
+      <div class="detail">${m.detail}</div>
+      <div class="scale">${m.scale}</div>`;
+
+  if (m.relations && m.group !== '5star' && m.group !== '4star') {
+    popupHtml += `<div class="rel-title">📋 董監事關係圖譜</div>`;
+    m.relations.forEach(r => {
+      const company = r.me;
+      const members = r.members;
+      const svgW = 300;
+      let svgLines = '', svgNodes = '';
+      const cx = svgW / 2;
+
+      // Company node at top
+      const cw = Math.min(180, Math.max(100, company.length * 10 + 16));
+      svgNodes += `<rect x="${cx - cw/2}" y="8" width="${cw}" height="22" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>`;
+      svgNodes += `<text x="${cx}" y="20" text-anchor="middle" font-size="11" fill="#1565c0" font-weight="700">${company}</text>`;
+
+      let y = 55;
+      members.forEach((p, i) => {
+        // Connecting line from company to this person
+        svgLines += `<line x1="${cx}" y1="30" x2="58" y2="${y - 12}" stroke="#90caf9" stroke-width="1.5"/>`;
+
+        // Person node (left side)
+        const pLabel = `${p.name}　${p.role}`;
+        svgNodes += `<rect x="6" y="${y - 12}" width="104" height="20" rx="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="1"/>`;
+        svgNodes += `<text x="58" y="${y + 1}" text-anchor="middle" font-size="10" fill="#e65100" font-weight="600">${pLabel}</text>`;
+
+        // Other companies (right side, one per row)
+        const otherCos = p.companies.filter(c => c !== company);
+        otherCos.forEach((c, ci) => {
+          const ocx = cx + 60;
+          const ocy = y - 2 + ci * 24;
+          if (ci === 0) svgLines += `<line x1="110" y1="${y}" x2="${ocx - 6}" y2="${ocy}" stroke="#e0e0e0" stroke-width="0.8" stroke-dasharray="2,2"/>`;
+          const tw = Math.min(130, Math.max(40, c.length * 7 + 10));
+          svgNodes += `<rect x="${ocx - tw/2}" y="${ocy - 8}" width="${tw}" height="16" rx="3" fill="#fafafa" stroke="#bdbdbd" stroke-width="0.6"/>`;
+          svgNodes += `<text x="${ocx}" y="${ocy + 4}" text-anchor="middle" font-size="8" fill="#616161">${c}</text>`;
+        });
+
+        y += Math.max(1, otherCos.length) * 24 + 6;
+      });
+
+      const svgH = y + 14;
+      popupHtml += `<div class="rel-graph"><svg width="${svgW}" height="${svgH}">${svgLines}${svgNodes}</svg></div>`;
+    });
+  }
+
+  popupHtml += `</div>`;
+  marker.bindPopup(popupHtml);
+});
+
+// Legend
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = '<h4>規模分級</h4>';
+  Object.keys(scaleLabels).forEach(k => {
+    div.innerHTML += `<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
+  });
+  div.innerHTML += `<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
+  return div;
+};
+legend.addTo(map);
+
+// Fit bounds
+const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+map.fitBounds(group.getBounds().pad(0.08));
+</script>
+</body>
+</html>
