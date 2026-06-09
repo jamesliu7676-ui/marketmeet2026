@@ -33,6 +33,7 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 .popup-content .p-detail { color:#555; margin-top:1px; }
 .popup-content .p-scale { margin-top:3px; }
 .popup-content .p-rel-title { font-weight:700; font-size:12px; color:#1a3a5c; margin-top:6px; padding-top:4px; border-top:1px solid #ddd; }
+.popup-content .p-specs { margin-top:4px; font-size:12px; color:#1565c0; font-weight:600; background:#e3f2fd; padding:4px 8px; border-radius:4px; }
 .popup-content .p-rel-graph { margin:3px 0; text-align:center; overflow-x:auto; }
 
 .cover { text-align:center; }
@@ -352,7 +353,7 @@ const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'
 function initGraph(containerId, r) {
   const c = document.getElementById(containerId);
   if (!c || !r || !r.members) return;
-  const W = c.clientWidth || 280, H = 320;
+  const W = 800, H = 480;
 
   // Build nodes & edges
   let nodes = [], edges = [];
@@ -400,12 +401,12 @@ function initGraph(containerId, r) {
   const nodeEls = nodes.map(n => {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.style.cursor = 'move';
-    const rw = Math.max(50, Math.min(120, n.label.length * 8 + 14));
-    const rh = 24;
-    let rx = 4, fill, stroke, tFill, tSize;
-    if (n.type === 'company') { fill='#e3f2fd'; stroke='#1565c0'; tFill='#1565c0'; tSize=11; }
-    else if (n.type === 'person') { fill='#fff3e0'; stroke='#ef6c00'; tFill='#e65100'; tSize=9; }
-    else { fill='#f5f5f5'; stroke='#9e9e9e'; tFill='#616161'; tSize=8; }
+    const rw = Math.max(80, Math.min(180, n.label.length * 10 + 24));
+    const rh = 32;
+    let rx = 6, fill, stroke, tFill, tSize;
+    if (n.type === 'company') { fill='#e3f2fd'; stroke='#1565c0'; tFill='#1565c0'; tSize=15; }
+    else if (n.type === 'person') { fill='#fff176'; stroke='#f9a825'; tFill='#6d4c00'; tSize=14; }
+    else { fill='#eeeeee'; stroke='#9e9e9e'; tFill='#616161'; tSize=13; }
 
     const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     rect.setAttribute('x', -rw/2); rect.setAttribute('y', -rh/2);
@@ -555,11 +556,14 @@ function initGraph(containerId, r) {
 // Marker data with relations
 const markersData = [
   { name:'亞東預拌混凝土（美崙廠）', addr:'花蓮市美工三街12號', lat:23.9932, lng:121.6170, group:'5star',
-    detail:'母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜產能180m³/h', relations:null },
+    detail:'母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜產能180m³/h',
+    specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷 63,931m³｜人力合計 11人', relations:null },
   { name:'台灣水泥花蓮廠（預拌混凝土工場）', addr:'花蓮市民孝里精美路2-1號', lat:23.9945, lng:121.6225, group:'5star',
-    detail:'台泥集團｜預拌工場1994年｜花蓮另有水泥廠+和平UHPC中心+花蓮分廠(2025)', relations:null },
+    detail:'台泥集團｜預拌工場1994年｜花蓮另有水泥廠+和平UHPC中心+花蓮分廠(2025)',
+    specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷由鳳勝代工｜人力合計 10人', relations:null },
   { name:'鳳勝實業（花蓮廠）', addr:'花蓮市美工五街3號', lat:23.9920, lng:121.6175, group:'4star',
-    detail:'母公司資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠', relations:null },
+    detail:'母公司資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠',
+    specs:'設備 3m³×1｜設計產能 130m³/hr｜年銷含代工 114,728m³｜人力合計 12人', relations:null },
   { name:'鼎泰興預拌混凝土', addr:'新城鄉新城村新興一路1巷6號', lat:24.0370, lng:121.6015, group:'3star',
     detail:'資本額4,100萬｜2003年設立(原名龍華預拌)｜負責人黃銘華', relations:null },
   { name:'威神企業', addr:'吉安鄉光華村華城六街35號', lat:23.9485, lng:121.5770, group:'3star',
@@ -576,6 +580,7 @@ const markersData = [
     ]}},
   { name:'友正預拌混凝廠', addr:'吉安鄉光華村華工六路31巷2號', lat:23.9470, lng:121.5760, group:'2star',
     detail:'資本額2,000萬｜1992年設立｜含崇德廠(秀林)+光復廠｜友正集團核心',
+    specs:'設備 3m³×2｜設計產能 270m³/hr｜年銷 100,000m³｜人力合計 17人',
     relations:{me:'友正預拌混凝廠', members:[
       {name:'馮志緯', role:'董事長', companies:['友正預拌混凝廠','友正貨運(監察人)']},
       {name:'方來興', role:'董事', companies:['友正預拌混凝廠','友誠','友砂預拌廠','友正貨運','友華加油站']},
@@ -591,6 +596,7 @@ const markersData = [
     ]}},
   { name:'長雄預拌混凝土廠', addr:'吉安鄉仁安村南海四街148號', lat:23.9745, lng:121.5980, group:'2star',
     detail:'資本額500萬｜1973年設立(50年老廠)｜邱氏家族(持股86%)｜年銷100,000m³｜人均效率最高',
+    specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷 100,000m³｜人力合計 13人',
     relations:{me:'長雄預拌混凝土廠', members:[
       {name:'邱豐娥', role:'董事長', companies:['長雄預拌混凝土廠','長旭建設']},
       {name:'邱雪萍', role:'董事', companies:['長雄預拌混凝土廠']},
@@ -611,6 +617,7 @@ const markersData = [
     ]}},
   { name:'定穎預拌混凝土（吉安廠）', addr:'吉安鄉（詳細地址待確認）', lat:23.9700, lng:121.5960, group:'2star',
     detail:'設備 2m³×1 套｜產能 80 m³/hr｜年銷 30,000 m³｜9 人精簡編制｜主攻利基市場',
+    specs:'設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜人力合計 9人',
     relations:null }
 ];
 
@@ -618,22 +625,25 @@ markersData.forEach((m, idx) => {
   const color = colors[m.group] || '#95a5a6';
   const icon = L.divIcon({
     className:'',
-    html:`<div style="width:18px;height:18px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
-    iconSize:[18,18], iconAnchor:[9,9], popupAnchor:[0,-12]
+    html:`<div style="width:26px;height:26px;border-radius:50%;background:${color};border:4px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.6)"></div>`,
+    iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-16]
   });
   const marker = L.marker([m.lat, m.lng], {icon}).addTo(map);
   marker.bindTooltip(m.name, {direction:'top', offset:[0,-6], opacity:0.95});
 
-  let popupHtml = `<div class="popup-content" style="width:300px;max-height:450px;overflow-y:auto">
+  let popupHtml = `<div class="popup-content" style="width:800px;max-height:560px;overflow-y:auto">
     <div class="p-name">${m.name}</div>
     <div class="p-detail">${m.addr}</div>
     <div class="p-detail">${m.detail}</div>`;
+  if (m.specs) {
+    popupHtml += `<div class="p-specs">${m.specs}</div>`;
+  }
   if (m.relations) {
     popupHtml += `<div class="p-rel-title">董監事關係圖譜 <span style="font-weight:400;font-size:10px;color:#999">（可拖曳節點）</span></div>
-      <div class="p-rel-graph"><div id="graph_${idx}" style="width:280px;height:320px"></div></div>`;
+      <div class="p-rel-graph"><div id="graph_${idx}" style="width:800px;height:480px"></div></div>`;
   }
   popupHtml += `</div>`;
-  marker.bindPopup(popupHtml, {maxWidth:340, maxHeight:500, className:'dark-popup'});
+  marker.bindPopup(popupHtml, {maxWidth:820, maxHeight:600, className:'dark-popup'});
   if (m.relations) {
     let cleanup;
     marker.on('popupopen', () => {
