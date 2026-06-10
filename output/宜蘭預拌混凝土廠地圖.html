@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>宜蘭地區 — 預拌混凝土同業競爭力地圖</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+#header {
+  background: #1a3a5c; color: white; padding: 12px 20px;
+  display: flex; justify-content: space-between; align-items: center;
+  position: relative; z-index: 1000;
+}
+#header h1 { font-size: 18px; font-weight: 600; }
+#header span { font-size: 13px; opacity: 0.8; }
+#map { height: calc(100vh - 50px); width: 100%; }
+.legend {
+  background: white; padding: 12px; border-radius: 6px;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.3);
+  font-size: 13px; line-height: 1.6; max-height: 400px; overflow-y: auto;
+}
+.legend h4 { margin-bottom: 6px; font-size: 14px; }
+.legend i { width: 14px; height: 14px; display: inline-block; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.legend .row { display: flex; align-items: center; gap: 4px; margin-bottom: 2px; }
+.popup-content { font-size: 13px; line-height: 1.5; }
+.popup-content .name { font-weight: 700; font-size: 14px; color: #1a3a5c; }
+.popup-content .detail { color: #555; margin-top: 2px; }
+.popup-content .scale { margin-top: 4px; }
+.popup-content .rel-title { font-weight: 700; font-size: 13px; color: #1a3a5c; margin-top: 8px; padding-top: 6px; border-top: 1px solid #ddd; }
+.popup-content .rel-graph { margin: 4px 0; text-align: center; overflow-x: auto; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>宜蘭地區 — 預拌混凝土同業競爭力地圖</h1>
+  <span>資料日期：2026-06-10</span>
+</div>
+<div id="map"></div>
+
+<script>
+const map = L.map('map', { zoomControl: true }).setView([24.68, 121.77], 11);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors',
+  maxZoom: 18
+}).addTo(map);
+
+const markers = [
+  // === 五星：全國性大廠 ===
+  {
+    name: '台泥台北水泥製品廠宜蘭分廠', addr: '員山鄉蓁巷村員山路二段438號',
+    lat: 24.739, lng: 121.721, scale: '★★★★★ 台泥集團', group: '5star',
+    detail: '台泥集團GRMC#109｜設廠2001年｜1套拌和設備+19輛預拌車｜廠長：洪崇智｜全台最大水泥集團在宜唯一預拌混凝土據點'
+  },
+  {
+    name: '潤泰精密材料宜蘭冬山廠', addr: '冬山鄉安平村大安路357號',
+    lat: 24.640, lng: 121.760, scale: '★★★★★ 潤泰集團', group: '5star',
+    detail: '潤泰集團（母公司資本30億）｜2009年標購原力霸水泥冬山廠｜水泥研磨+乾粉砂漿+預拌混凝土｜分公司經理：李宜哲'
+  },
+  // === 四星：在地龍頭 ===
+  {
+    name: '宜興預拌混凝土（總部暨冬山一廠）', addr: '冬山鄉龍德工業區德興六路43號',
+    lat: 24.6570, lng: 121.7891, scale: '★★★★☆ 宜蘭最大業者（4廠）', group: '4star',
+    detail: 'GRMC#040｜資本額1.72億｜1996年設立｜龍德工業區3廠+宜蘭梅洲廠共4廠｜另有三芝廠｜負責人：李興和',
+    relations: [{me:'宜興預拌混凝土', members:[{name:'李興和', role:'董事長', companies:['宜興預拌混凝土','武雄實業(董事長)','梅洲混凝土工業(董事)','藍園營造','蘇澳石礦']},{name:'林贊壽', role:'董事', companies:['宜興預拌混凝土','梅洲混凝土工業(董事長)','靖瑋營造(負責人)','蘇澳石礦(負責人)','武雄實業(監察人)','億茂汽車貨運']},{name:'李伯恩', role:'董事', companies:['宜興預拌混凝土']},{name:'陳明月', role:'董事', companies:['宜興預拌混凝土','武雄實業(董事)','梅洲混凝土工業(董事)']},{name:'李松輝', role:'董事', companies:['宜興預拌混凝土']},{name:'謝心悅', role:'董事', companies:['宜興預拌混凝土']},{name:'陳正添', role:'監察人', companies:['宜興預拌混凝土','梅洲混凝土工業(監察人)']}]}
+  },
+  {
+    name: '宜興預拌混凝土（冬山二廠）', addr: '冬山鄉龍德工業區德興五路36號',
+    lat: 24.6575, lng: 121.7880, scale: '★★★★☆ 宜興集團-二廠', group: '4star',
+    detail: 'GRMC#040｜3套拌和設備｜2003年設立｜屬宜興集團'
+  },
+  {
+    name: '宜興預拌混凝土（冬山三廠）', addr: '冬山鄉龍德工業區德興六路41~43號',
+    lat: 24.6565, lng: 121.7898, scale: '★★★★☆ 宜興集團-三廠', group: '4star',
+    detail: 'GRMC#040｜2012年設立｜屬宜興集團'
+  },
+  {
+    name: '宜興預拌混凝土（宜蘭梅洲廠）', addr: '宜蘭市梅洲里梅洲二路127號',
+    lat: 24.7540, lng: 121.7400, scale: '★★★★☆ 宜興集團-梅洲廠', group: '4star',
+    detail: 'GRMC#040｜2013年設立｜屬宜興集團｜宜蘭市北側梅洲工業區'
+  },
+  // === 三星：中型廠 ===
+  {
+    name: '久屋預拌混凝土', addr: '冬山鄉龍祥十路19號',
+    lat: 24.6580, lng: 121.7920, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    detail: '資本額8,000萬｜1982年設立｜負責人：簡志耀｜員工26人｜原「久屋建設事業(股)」',
+    relations: [{me:'久屋預拌混凝土', members:[{name:'簡志耀', role:'董事長', companies:['久屋預拌混凝土','金滿億珠寶銀樓(板橋)','金寶玉銀樓(板橋)']},{name:'李茂榮', role:'董事', companies:['久屋預拌混凝土']},{name:'游正雄', role:'董事', companies:['久屋預拌混凝土']},{name:'蔡宏裕', role:'監察人', companies:['久屋預拌混凝土']},{name:'張琇喬', role:'監察人', companies:['久屋預拌混凝土']}]}]
+  },
+  {
+    name: '立泰預拌混凝土工業', addr: '冬山鄉龍祥十路5號',
+    lat: 24.6590, lng: 121.7920, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    detail: '資本額5,000萬｜1993年設立｜負責人：楊欣浩｜員工34人｜兼營瀝青混凝土',
+    relations: [{me:'立泰預拌混凝土', members:[{name:'楊欣浩', role:'董事長', companies:['立泰預拌混凝土']},{name:'廖淑芬', role:'董事', companies:['立泰預拌混凝土']},{name:'楊純玲', role:'董事', companies:['立泰預拌混凝土']},{name:'林建章', role:'監察人', companies:['立泰預拌混凝土']}]}]
+  },
+  {
+    name: '享正實業', addr: '冬山鄉德興一路42號',
+    lat: 24.6580, lng: 121.7890, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    detail: '資本額4,968萬｜1987年設立｜負責人：林文政｜ISO9002｜2套拌合機+15輛車',
+    relations: [{me:'享正實業', members:[{name:'林文政', role:'董事長', companies:['享正實業']},{name:'洪裕健', role:'董事', companies:['享正實業']},{name:'林秀春', role:'監察人', companies:['享正實業']}]}]
+  },
+  {
+    name: '得福混凝土工業', addr: '冬山鄉成興路42號',
+    lat: 24.6680, lng: 121.7950, scale: '★★★☆☆ 老牌在地廠（1979）', group: '3star',
+    detail: '資本額6,000萬｜1979年設立｜董事長：連志峯｜與福得混凝土為關聯企業（共享董監事網絡）',
+    relations: [{me:'得福混凝土', members:[{name:'連志峯', role:'董事長', companies:['得福混凝土','福得混凝土(董事)','銀燦有限公司(楊梅)']},{name:'吳智翔', role:'董事', companies:['得福混凝土','福得混凝土(董事長)','吉祥機車行(礁溪)']},{name:'連怡雲', role:'董事', companies:['得福混凝土']},{name:'薛豐文', role:'監察人', companies:['得福混凝土','福得混凝土(董事)']}]}]
+  },
+  // === 二星：小型廠 ===
+  {
+    name: '福得混凝土工業', addr: '宜蘭市梅洲二路97號',
+    lat: 24.7540, lng: 121.7410, scale: '★★☆☆☆ 梅洲工業區', group: '2star',
+    detail: '資本額4,160萬｜1985年設立｜董事長：吳智翔｜連志峯為董事（與得福關聯）',
+    relations: [{me:'福得混凝土', members:[{name:'吳智翔', role:'董事長', companies:['福得混凝土','得福混凝土(董事)','吉祥機車行(礁溪)']},{name:'薛豐文', role:'董事', companies:['福得混凝土','得福混凝土(監察人)']},{name:'連志峯', role:'董事', companies:['福得混凝土','得福混凝土(董事長)','銀燦有限公司(楊梅)']},{name:'連志豪', role:'監察人', companies:['福得混凝土']}]}]
+  }
+];
+
+const colors = {
+  '5star': '#e74c3c',
+  '4star': '#e67e22',
+  '3star': '#f1c40f',
+  '2star': '#3498db',
+  '1star': '#95a5a6'
+};
+
+const scaleLabels = {
+  '5star': '★★★★★ 全國性大廠',
+  '4star': '★★★★☆ 在地龍頭',
+  '3star': '★★★☆☆ 中型廠',
+  '2star': '★★☆☆☆ 小型廠',
+  '1star': '★☆☆☆☆ 微型'
+};
+
+markers.forEach(m => {
+  const color = colors[m.group];
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -16]
+  });
+
+  const marker = L.marker([m.lat, m.lng], { icon }).addTo(map);
+  marker.bindTooltip(m.name, { direction: 'top', offset: [0, -10], opacity: 0.95 });
+
+  let popupHtml = `
+    <div class="popup-content">
+      <div class="name">${m.name}</div>
+      <div class="detail">${m.addr}</div>
+      <div class="detail">${m.detail}</div>
+      <div class="scale">${m.scale}</div>`;
+
+  if (m.relations && m.group !== '5star') {
+    popupHtml += `<div class="rel-title">📋 董監事關係圖譜</div>`;
+    m.relations.forEach(r => {
+      const company = r.me;
+      const members = r.members;
+      const svgW = 320;
+      let svgLines = '', svgNodes = '';
+      const cx = svgW / 2;
+
+      const cw = Math.min(180, Math.max(100, company.length * 10 + 16));
+      svgNodes += `<rect x="${cx - cw/2}" y="6" width="${cw}" height="22" rx="4" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>`;
+      svgNodes += `<text x="${cx}" y="${18}" text-anchor="middle" font-size="11" fill="#1565c0" font-weight="700">${company}</text>`;
+
+      let y = 48;
+      members.forEach((p, i) => {
+        svgLines += `<line x1="${cx}" y1="28" x2="60" y2="${y - 10}" stroke="#90caf9" stroke-width="1.5"/>`;
+
+        const pLabel = `${p.name}　${p.role}`;
+        svgNodes += `<rect x="6" y="${y - 10}" width="108" height="20" rx="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="1"/>`;
+        svgNodes += `<text x="60" y="${y + 3}" text-anchor="middle" font-size="10" fill="#e65100" font-weight="600">${pLabel}</text>`;
+
+        const otherCos = p.companies.filter(c => c !== company);
+        otherCos.forEach((c, ci) => {
+          const ocx = cx + 55;
+          const ocy = y + ci * 22;
+          if (ci === 0) svgLines += `<line x1="114" y1="${y}" x2="${ocx - 6}" y2="${ocy}" stroke="#e0e0e0" stroke-width="0.8" stroke-dasharray="2,2"/>`;
+          const tw = Math.min(130, Math.max(40, c.length * 7 + 10));
+          svgNodes += `<rect x="${ocx - tw/2}" y="${ocy - 7}" width="${tw}" height="14" rx="3" fill="#fafafa" stroke="#bdbdbd" stroke-width="0.6"/>`;
+          svgNodes += `<text x="${ocx}" y="${ocy + 4}" text-anchor="middle" font-size="8" fill="#616161">${c}</text>`;
+        });
+
+        y += Math.max(1, otherCos.length) * 22 + 8;
+      });
+
+      const svgH = y + 10;
+      popupHtml += `<div class="rel-graph"><svg width="${svgW}" height="${svgH}">${svgLines}${svgNodes}</svg></div>`;
+    });
+  }
+
+  popupHtml += `</div>`;
+  marker.bindPopup(popupHtml, { maxWidth: 400 });
+});
+
+// Legend
+const legend = L.control({ position: 'bottomright' });
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div', 'legend');
+  div.innerHTML = '<h4>規模分級</h4>';
+  Object.keys(scaleLabels).forEach(k => {
+    div.innerHTML += `<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
+  });
+  div.innerHTML += `<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 滑鼠點擊查看詳細</div>`;
+  return div;
+};
+legend.addTo(map);
+
+// Fit bounds
+const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+map.fitBounds(group.getBounds().pad(0.08));
+</script>
+</body>
+</html>
