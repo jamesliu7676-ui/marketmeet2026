@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -298,7 +298,16 @@ document.getElementById('deck').addEventListener('click', e => {
 
 // ====== MAP ======
 const map = L.map('map', { zoomControl: true }).setView([24.68, 121.77], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(map);
+const osm = const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+});
+const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
+  attribution:'國土測繪圖資服務雲', maxZoom: 18
+});
+nlsc.addTo(map);
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
+
+L.control.layers({ '\u570b\u571f\u6e2c\u7e6a\u5716\u8cc7\uff08\u7cbe\u78ba\uff09':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
 
 const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
 

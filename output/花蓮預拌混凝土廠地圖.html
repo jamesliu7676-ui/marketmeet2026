@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>?梯?啣? ????瘛瑕???璆剔奎?剖??啣?</title>
+<title>花蓮地區 — 預拌混凝土同業競爭力地圖</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
@@ -40,8 +40,8 @@ body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
 </head>
 <body>
 <div id="header">
-  <h1>?梯?啣? ????瘛瑕???璆剔奎?剖??啣?</h1>
-  <span>鞈??交?嚗?026-06-01</span>
+  <h1>花蓮地區 — 預拌混凝土同業競爭力地圖</h1>
+  <span>資料日期：2026-06-01</span>
 </div>
 <div id="map"></div>
 
@@ -52,111 +52,83 @@ const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
 });
 const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
-  attribution:'??皜祉鼓??????, maxZoom:18
+  attribution:'國土測繪圖資服務雲', maxZoom: 18
 });
 nlsc.addTo(map);
-L.control.layers({ '??皜祉鼓??嚗移蝣綽?':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
+
 
 const markers = [
-  // === 鈭?嚗?批之撱?===
+  // === 五星：全國性大廠 ===
   {
-    name: '鈭??瘛瑕???蝢?撱?', addr: '?梯撣?撌乩?銵?2??,
-    lat: 24.0164108, lng: 121.6320073, scale: '???????典??批之撱?, group: '5star',
-    detail: '瘥?訾?瘜?00%頧?鞈?鞈憿?0??閮剖?2001撟湛??典13撱?鞎痊鈭綽????瘥?貉鈭)??撱粹?(撱)嚚?踝?180m糧/h嚚SO9001?４頞唾楚隤?嚚?025 APEA鈭云隡平??
+    name: '亞東預拌混凝土（美崙廠）', addr: '花蓮市美工三街12號',
+    lat: 24.0164108, lng: 121.6320073, scale: '★★★★★ 全國性大廠', group: '5star',
+    detail: '母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜負責人：李坤炎(母公司董事長)、徐建雄(廠長)｜產能：180m³/h｜ISO9001、碳足跡認證｜2025 APEA亞太企業獎'
   },
   {
-    name: '?啁瘞湔野?梯撱???瘛瑕??極?湛?', addr: '?梯撣?摮?蝎曄?頝?-1??,
-    lat: 24.0138314, lng: 121.6289907, scale: '???????唳野??', group: '5star',
-    detail: '?唳野??嚚??極?渡閮?994撟湛?撱??隞??梯?行?瘞湔野撱??舀103????撟袋HPC銝剖?(2023?)??偌瘜亥ˊ???梯??(2025?啗身)嚚?唳?憭扳偌瘜仿???
+    name: '台灣水泥花蓮廠（預拌混凝土工場）', addr: '花蓮市民孝里精美路2-1號',
+    lat: 24.0138314, lng: 121.6289907, scale: '★★★★★ 台泥集團', group: '5star',
+    detail: '台泥集團｜預拌工場登記1994年｜廠長劉志仁｜花蓮另有水泥廠(華東103號)、和平UHPC中心(2023啟用)、台北水泥製品廠花蓮分廠(2025新設)｜全台最大水泥集團'
   },
-  // === ??嚗?啣?暺?===
+  // === 四星：全台布點 ===
   {
-    name: '曈喳?撖行平嚗?桀?嚗?, addr: '?梯撣?撌乩?銵???,
-    lat: 24.0134506, lng: 121.6340555, scale: '???????典撣?', group: '4star',
-    detail: '瘥?貉??祇?6???⊥嚗瘜?摰?潮嚚?965撟渡??喲?頛貉絲摰塚?1997撟湧??湛??典11??撱?2?撱??梯?行?蝚砌?撱?5??+憯質?撱?鞎痊鈭粹??亙撥(瘥????璉?(撱)'
+    name: '鳳勝實業（花蓮廠）', addr: '花蓮市美工五街3號',
+    lat: 24.0134506, lng: 121.6340555, scale: '★★★★☆ 全台布點', group: '4star',
+    detail: '母公司資本額6億｜股東：台泥+官田鋼鐵｜1965年砂石運輸起家，1997年重整｜全台11預拌廠+2砂石廠｜花蓮另有第二廠(5號)+壽豐廠｜負責人黃健強(母公司)、林棟樑(廠長)'
   },
-  // === 銝?嚗?銝剖?撱?===
+  // === 三星：地區中型廠 ===
   {
-    name: '曌陸???毽??', addr: '?啣?????啗?銝頝?撌???,
-    lat: 24.1294355, lng: 121.6428992, scale: '???????啣?銝剖?撱?, group: '3star',
-    detail: '鞈憿?,100?穿?2003撟渲身蝡???樴??)嚚?鞎砌犖暺??荔?撌亙?嚗????極?楝12??,
+    name: '鼎泰興預拌混凝土', addr: '新城鄉新城村新興一路1巷6號',
+    lat: 24.1294355, lng: 121.6428992, scale: '★★★☆☆ 地區中型廠', group: '3star',
+    detail: '資本額4,100萬｜2003年設立(原名龍華預拌)｜負責人黃銘華｜工廠：秀林鄉和工四路12號',
     relations: null
   },
   {
-    name: '憡?隡平', addr: '?????舀??臬??剛?35??,
-    lat: 23.9249937, lng: 121.5825473, scale: '??????銴??平??, group: '3star',
-    detail: '鞈憿?,800?穿?1987撟渲身蝡?鞎痊鈭箸???嚚?????∪?+撱Ｘ??拇??歹?璅?14隞塚??怎??喟?閫???詨',
-    relations: [{me:'憡?隡平', members:[{name:'璇?摰?, role:'?????, companies:['憡?隡平','????]},{name:'?單?戭?, role:'???', companies:['憡?隡平']},{name:'?喟?摰?, role:'???', companies:['憡?隡平']}]}]
+    name: '威神企業', addr: '吉安鄉光華村華城六街35號',
+    lat: 23.9249937, lng: 121.5825473, scale: '★★★☆☆ 複合型業者', group: '3star',
+    detail: '資本額4,800萬｜1987年設立｜負責人梁億宏｜預拌+土石採取+廢棄物清除｜標案14件｜含砂石碎解洗選場',
+    relations: [{me:'威神企業', members:[{name:'梁億宏', role:'董事長', companies:['威神企業','億鍠營造']},{name:'陳月嬌', role:'董事', companies:['威神企業']},{name:'陳玉官', role:'董事', companies:['威神企業']}]}]
   },
   {
-    name: '?????砍', addr: '蝘???像??撟?0-11??,
-    lat: 24.2940384, lng: 121.6023807, scale: '????????+??', group: '3star',
-    detail: '鞈憿?,000?穿?1994撟渲身蝡?鞎痊鈭箸靘?嚚?甇????靽?璆哨??恍?????鋆賡??像撌交平?',
-    relations: [{me:'?????砍', members:[{name:'?嫣???, role:'鞎痊鈭?, companies:['??','?迤??瘛瑕?撱?,'????撱?,'?迤鞎券?','??硃蝡?]}]}]
+    name: '友誠有限公司', addr: '秀林鄉和平村和平30-11號',
+    lat: 24.2940384, lng: 121.6023807, scale: '★★★☆☆ 預拌+瀝青', group: '3star',
+    detail: '資本額3,000萬｜1994年設立｜負責人方來興｜友正集團關係企業｜含預拌+瀝青製造｜和平工業區',
+    relations: [{me:'友誠有限公司', members:[{name:'方來興', role:'負責人', companies:['友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}]
   },
-  // ?撱箸?撖行平?梯撱???撌脩?????  // ?唬???瘛瑕??? ??撌脩?????  // === 鈭?嚗?孵??? ===
+  // 國產建材實業花蓮廠 — 已結束營運
+  // 台亞預拌混凝土廠 — 已結束營運
+  // === 二星：地方小型廠 ===
   {
-    name: '?勗遣撖行平', addr: '曈單??格旨?楝39-1??,
-    lat: 23.7698653, lng: 121.4910701, scale: '????????桀?孵?', group: '2star',
-    detail: '鞈憿?,800?穿?1990撟渲身蝡?鞎痊鈭粹?勗(??鞎砌犖?嫣???嚚?甇?????臭?璆?,
-    relations: [{me:'?勗遣撖行平', members:[{name:'?單??, role:'鞎痊鈭?, companies:['?勗遣撖行平','?迤??瘛瑕?撱????鈭?','?迤鞎券?']},{name:'?嫣???, role:'??鞎砌犖', companies:['?勗遣撖行平(??','??','?迤??瘛瑕?撱?,'????撱?,'?迤鞎券?','??硃蝡?]}]}]
-  },
-  {
-    name: '?迤??瘛瑕?撱?, addr: '?????舀??臬極?剛楝31撌???,
-    lat: 23.9354502, lng: 121.5903549, scale: '???????迤??', group: '2star',
-    detail: '鞈憿?,000?穿?1992撟渲身蝡??怠?敺瑕?(蝘??+?儔撱?璅?1隞??像撌交平?)',
-    relations: [{me:'?迤??瘛瑕?撱?, members:[{name:'擐桀?蝺?, role:'?????, companies:['?迤??瘛瑕?撱?,'?迤鞎券?(???鈭?']},{name:'?嫣???, role:'???', companies:['?迤??瘛瑕?撱?,'??','????撱?,'?迤鞎券?','??硃蝡?]},{name:'?孵膝蝧?, role:'???', companies:['?迤??瘛瑕?撱?,'????撱?,'?迤?','?孵?撱箄身']},{name:'????, role:'???', companies:['?迤??瘛瑕?撱?,'?迤鞎券?']},{name:'?單??, role:'???鈭?, companies:['?迤??瘛瑕?撱?,'?勗遣撖行平','?迤鞎券?']}]}]
+    name: '花建實業', addr: '鳳林鎮榮開路39-1號',
+    lat: 23.7698653, lng: 121.4910701, scale: '★★☆☆☆ 南花蓮地方廠', group: '2star',
+    detail: '資本額1,800萬｜1990年設立｜負責人陳東堯(前負責人方來興)｜友正集團關聯企業',
+    relations: [{me:'花建實業', members:[{name:'陳東堯', role:'負責人', companies:['花建實業','友正預拌混凝廠(監察人)','友正貨運']},{name:'方來興', role:'前負責人', companies:['花建實業(前)','友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}]
   },
   {
-    name: '?琿???瘛瑕???', addr: '????摰??絲??148??,
-    lat: 23.9520915, lng: 121.5931644, scale: '??????撠?撱?, group: '2star',
-    detail: '鞈憿?00?穿?1973撟渲身蝡?50撟渲?)嚚瘞振??璆??86%)嚚?靽?璆哨??瑟撱箄身??凋漱??,
-    relations: [{me:'?琿???瘛瑕???', members:[{name:'?梯?憡?, role:'?????, companies:['?琿???瘛瑕???','?瑟撱箄身']},{name:'?梢??, role:'???', companies:['?琿???瘛瑕???']},{name:'?勗???, role:'???', companies:['?琿???瘛瑕???']},{name:'?梢璅?, role:'???鈭?, companies:['?琿???瘛瑕???','?瑟鈭日?]}]}]
-  },
-  // === 鈭?嚗?嚗?===
-  {
-    name: '????撱?, addr: '?梯撣?鋆?撖???50撌?7??,
-    lat: 23.9968395, lng: 121.5977027, scale: '???????迤??', group: '2star',
-    detail: '鞈憿?,000?穿?1998撟渲身蝡??迤????隡平',
-    relations: [{me:'????撱?, members:[{name:'?孵???, role:'鞎痊鈭?, companies:['????撱?]},{name:'?嫣???, role:'???', companies:['????撱?,'?迤??瘛瑕?撱?,'??','?迤鞎券?','??硃蝡?]},{name:'?孵膝蝧?, role:'???', companies:['????撱?,'?迤??瘛瑕?撱?,'?迤?','?孵?撱箄身']}]}]
-  },
-  // === 銝???唳?蝡?敺桀? ===
-  {
-    name: '憭批???瘛瑕???, addr: '????摰??絲銝?47??,
-    lat: 23.9452078, lng: 121.5928811, scale: '???????唳?蝡?2022嚗?, group: '1star',
-    detail: '鞈憿?00?穿?2022撟湔閮哨?鞎痊鈭箸萱??嚚極撱????格瘞?-1??瘨菔????嚚?靽?璆哨?憭批?銵??極蝔?,
-    relations: [{me:'憭批???瘛瑕???, members:[{name:'皜抵???, role:'鞎痊鈭?, companies:['憭批???瘛瑕???,'憭批?銵?,'??撌亦?']}]}]
-  },
-  // === 銝剖??嚗?璆凋葉 ===
-  {
-    name: '?踵隡平嚗嚗?, addr: '?儔?葉?航楝256撌?7??,
-    lat: 23.6707166, lng: 121.4242939, scale: '???????儔?唳撱?, group: '2star',
-    detail: '鞈憿?00?穿?1980撟渲身蝡?2025/10鞎痊鈭箄??渡撘菜旨?嚚???摰嗆?隡平嚚極撱?雿?銵?36撌???
+    name: '友正預拌混凝廠', addr: '吉安鄉光華村華工六路31巷2號',
+    lat: 23.9354502, lng: 121.5903549, scale: '★★☆☆☆ 友正集團', group: '2star',
+    detail: '資本額2,000萬｜1992年設立｜含崇德廠(秀林)+光復廠｜標案1件(和平工業區)',
+    relations: [{me:'友正預拌混凝廠', members:[{name:'馮志緯', role:'董事長', companies:['友正預拌混凝廠','友正貨運(監察人)']},{name:'方來興', role:'董事', companies:['友正預拌混凝廠','友誠','友砂預拌廠','友正貨運','友華加油站']},{name:'方彥翔', role:'董事', companies:['友正預拌混凝廠','友砂預拌廠','友正砂石','方嘉建設']},{name:'林化應', role:'董事', companies:['友正預拌混凝廠','友正貨運']},{name:'陳東堯', role:'監察人', companies:['友正預拌混凝廠','花建實業','友正貨運']}]}]
   },
   {
-    name: '鞎怠予銝??毽??嚗嚗?, addr: '??????30??,
-    lat: 23.5324636, lng: 121.3763246, scale: '????????撠?撱?, group: '2star',
-    detail: '鞈憿?0?穿??????00??022?寧?嚗?鞎痊鈭箇?蟡亙?嚚???,000??,000m糧'
+    name: '長雄預拌混凝土廠', addr: '吉安鄉仁安村南海四街148號',
+    lat: 23.9520915, lng: 121.5931644, scale: '★★☆☆☆ 小型廠', group: '2star',
+    detail: '資本額500萬｜1973年設立(50年老廠)｜邱氏家族企業(持股86%)｜關係企業：長旭建設、長旭交通',
+    relations: [{me:'長雄預拌混凝土廠', members:[{name:'邱豐娥', role:'董事長', companies:['長雄預拌混凝土廠','長旭建設']},{name:'邱雪萍', role:'董事', companies:['長雄預拌混凝土廠']},{name:'邱如茵', role:'董事', companies:['長雄預拌混凝土廠']},{name:'邱錫樑', role:'監察人', companies:['長雄預拌混凝土廠','長旭交通']}]}]
   },
+  // === 二星（續） ===
   {
-    name: '?貊?撖行平???砍', addr: '???韌撗⊥??韌頝臭?畾?68??,
-    lat: 23.5593331, lng: 121.3958327, scale: '?????????唳撱?, group: '2star',
-    detail: '鞈憿?,000?穿?1995撟渲身蝡?鞎痊鈭箸??仿?嚚?璆凋葉'
+    name: '友砂預拌廠', addr: '花蓮市國裕里富裕十街50巷17號',
+    lat: 23.9968395, lng: 121.5977027, scale: '★★☆☆☆ 友正集團', group: '2star',
+    detail: '資本額2,000萬｜1998年設立｜友正集團關係企業',
+    relations: [{me:'友砂預拌廠', members:[{name:'方冠儒', role:'負責人', companies:['友砂預拌廠']},{name:'方來興', role:'董事', companies:['友砂預拌廠','友正預拌混凝廠','友誠','友正貨運','友華加油站']},{name:'方彥翔', role:'董事', companies:['友砂預拌廠','友正預拌混凝廠','友正砂石','方嘉建設']}]}]
   },
+  // === 一星：新成立/微型 ===
   {
-    name: '?血控隡平???砍', addr: '撖????頠?銵?畾?5銋???,
-    lat: 23.1827030, lng: 121.2516392, scale: '??????撖??唳撱?, group: '2star',
-    detail: '鞈憿?00?穿?1998撟渲身蝡?鞎痊鈭粹瘣芰?嚚?頨怠蝡?璆剔冗(1992)嚚振?????血控?銵撅勗??典?撌交平嚗?
-  },
-  {
-    name: '撅縑撖行平???砍', addr: '???桀之蝳寥?憭抒此202-4??,
-    lat: 23.3795730, lng: 121.3253466, scale: '????????銝剖?撱?, group: '3star',
-    detail: '鞈憿?,950?穿?1992撟渲身蝡?鞎痊鈭箸?脣?嚚?靽?璆哨?撅縑???勗銝嚗???,060??嚚???,000m糧'
-  },
-  {
-    name: '?拇陸撌亦?銵?, addr: '?儔?之擐祆?銝剛頝?82??璅?,
-    lat: 23.6640, lng: 121.4250, scale: '??????撠??丰', group: '1star',
-    detail: '鞈憿?8?穿?1991撟渲身蝡??丰蝯?(?剔璁?嚚TC(2004)頛?甈撩??撌亙??餉?霅?
+    name: '大元預拌混凝土', addr: '吉安鄉仁安村南海七街47號',
+    lat: 23.9452078, lng: 121.5928811, scale: '★☆☆☆☆ 新成立（2022）', group: '1star',
+    detail: '資本額500萬｜2022年新設｜負責人温茗勝｜工廠：玉里鎮新民8-1號(涵蓋南花蓮)｜關係企業：大元行、芊成工程',
+    relations: [{me:'大元預拌混凝土', members:[{name:'温茗勝', role:'負責人', companies:['大元預拌混凝土','大元行','芊成工程']}]}]
   }
 ];
 
@@ -169,11 +141,11 @@ const colors = {
 };
 
 const scaleLabels = {
-  '5star': '???????典??批之撱?,
-  '4star': '???????典撣?',
-  '3star': '???????啣?銝剖?撱?,
-  '2star': '???????唳撠?撱?,
-  '1star': '??????敺桀?嚗??'
+  '5star': '★★★★★ 全國性大廠',
+  '4star': '★★★★☆ 全台布點',
+  '3star': '★★★☆☆ 地區中型廠',
+  '2star': '★★☆☆☆ 地方小型廠',
+  '1star': '★☆☆☆☆ 微型／新成立'
 };
 
 markers.forEach(m => {
@@ -197,7 +169,7 @@ markers.forEach(m => {
       <div class="scale">${m.scale}</div>`;
 
   if (m.relations && m.group !== '5star' && m.group !== '4star') {
-    popupHtml += `<div class="rel-title">?? ??鈭?靽?霅?/div>`;
+    popupHtml += `<div class="rel-title">📋 董監事關係圖譜</div>`;
     m.relations.forEach(r => {
       const company = r.me;
       const members = r.members;
@@ -216,7 +188,7 @@ markers.forEach(m => {
         svgLines += `<line x1="${cx}" y1="30" x2="58" y2="${y - 12}" stroke="#90caf9" stroke-width="1.5"/>`;
 
         // Person node (left side)
-        const pLabel = `${p.name}?${p.role}`;
+        const pLabel = `${p.name}　${p.role}`;
         svgNodes += `<rect x="6" y="${y - 12}" width="104" height="20" rx="10" fill="#fff3e0" stroke="#ef6c00" stroke-width="1"/>`;
         svgNodes += `<text x="58" y="${y + 1}" text-anchor="middle" font-size="10" fill="#e65100" font-weight="600">${pLabel}</text>`;
 
@@ -247,11 +219,11 @@ markers.forEach(m => {
 const legend = L.control({ position: 'bottomright' });
 legend.onAdd = function() {
   const div = L.DomUtil.create('div', 'legend');
-  div.innerHTML = '<h4>閬芋??</h4>';
+  div.innerHTML = '<h4>規模分級</h4>';
   Object.keys(scaleLabels).forEach(k => {
     div.innerHTML += `<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
   });
-  div.innerHTML += `<hr style="margin:6px 0"><div style="font-size:12px;color:#888">? ?豢筑憿舐內撱? 嚚?暺??亦?閰喟敦</div>`;
+  div.innerHTML += `<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
   return div;
 };
 legend.addTo(map);

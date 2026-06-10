@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -306,7 +306,16 @@ function sortTable(col) {
 
 // ====== MAP ======
 const map = L.map('map', { zoomControl: true }).setView([23.93, 121.55], 11);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution:'&copy; OpenStreetMap contributors', maxZoom:18 }).addTo(map);
+const osm = const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+});
+const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
+  attribution:'國土測繪圖資服務雲', maxZoom: 18
+});
+nlsc.addTo(map);
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
+
+L.control.layers({ '\u570b\u571f\u6e2c\u7e6a\u5716\u8cc7\uff08\u7cbe\u78ba\uff09':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
 
 const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
 
@@ -579,20 +588,7 @@ const markersData = [
   { name:'定穎預拌混凝土（吉安廠）', addr:'吉安鄉（詳細地址待確認）', lat:23.9700, lng:121.5960, group:'2star',
     detail:'設備 2m³×1 套｜產能 80 m³/hr｜年銷 30,000 m³｜9 人精簡編制｜主攻利基市場',
     specs:'設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜人力合計 9人',
-    relations:null },
-  // === 中南區 ===
-  { name:'政旺企業（股）', addr:'光復鄉中華路256巷17號', lat:23.6707166, lng:121.4242939, group:'2star',
-    detail:'資本額500萬｜1980年設立｜2025/10負責人變更為張榮耀｜五兄弟家族企業' },
-  { name:'貫天下預拌混凝土（股）', addr:'瑞穗鄉瑞北村30號', lat:23.5324636, lng:121.3763246, group:'2star',
-    detail:'資本額50萬（原有限公司800萬2022改組）｜負責人王祥富｜月均5,000–6,000m³' },
-  { name:'陸紀實業有限公司', addr:'瑞穗鄉鶴岡村興鶴路二段368號', lat:23.5593331, lng:121.3958327, group:'2star',
-    detail:'資本額1,000萬｜1995年設立｜負責人李煥陞' },
-  { name:'錦山企業有限公司', addr:'富里鄉石牌村車站街一段35之2號', lat:23.1827030, lng:121.2516392, group:'2star',
-    detail:'資本額500萬｜1998年設立｜負責人邱洪章｜前身全章企業社(1992)｜家族經營' },
-  { name:'展信實業有限公司', addr:'玉里鎮大禹里大禹202-4號', lat:23.3795730, lng:121.3253466, group:'3star',
-    detail:'資本額2,950萬｜1992年設立｜負責人曾雲嬌｜月均4,000m³｜關係：展信營造' },
-  { name:'利泰工程行', addr:'光復鄉大馬村中華路382號1樓', lat:23.6640, lng:121.4250, group:'1star',
-    detail:'資本額48萬｜1991年｜合夥組織(鄭火榮)｜小型合夥' }
+    relations:null }
 ];
 
 markersData.forEach((m, idx) => {
