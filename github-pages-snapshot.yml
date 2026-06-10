@@ -1,0 +1,17 @@
+- generic [ref=e2]:
+  - heading "全台預拌混凝土同業競爭力地圖" [level=1] [ref=e3]
+  - generic [ref=e4]:
+    - generic [ref=e5]: —
+    - combobox [ref=e6] [cursor=pointer]:
+      - option "🌏 全台概覽" [selected]
+      - option "🏙️ 北區（台北·新北·基隆）"
+      - option "🏙️ 桃園"
+      - option "🏙️ 新竹·苗栗"
+      - option "🏙️ 台中·彰化"
+      - option "🏙️ 雲林·嘉義·南投"
+      - option "🏙️ 台南"
+      - option "🏙️ 高雄"
+      - option "🏙️ 屏東"
+      - option "🏙️ 台東"
+      - option "🗺️ 花蓮"
+      - option "🗺️ 宜蘭"
