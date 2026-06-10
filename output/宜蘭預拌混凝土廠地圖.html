@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
@@ -43,27 +43,31 @@ body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
 <script>
 const map = L.map('map', { zoomControl: true }).setView([24.68, 121.77], 11);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap contributors',
-  maxZoom: 18
-}).addTo(map);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
+});
+const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
+  attribution:'國土測繪圖資服務雲', maxZoom:18
+});
+nlsc.addTo(map);
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
 
 const markers = [
   // === 五星：全國性大廠 ===
   {
     name: '台泥台北水泥製品廠宜蘭分廠', addr: '員山鄉蓁巷村員山路二段438號',
-    lat: 24.739, lng: 121.721, scale: '★★★★★ 台泥集團', group: '5star',
+    lat: 24.7241679, lng: 121.7104327, scale: '★★★★★ 台泥集團', group: '5star',
     detail: '台泥集團GRMC#109｜設廠2001年｜1套拌和設備+19輛預拌車｜廠長：洪崇智｜全台最大水泥集團在宜唯一預拌混凝土據點'
   },
   {
     name: '潤泰精密材料宜蘭冬山廠', addr: '冬山鄉安平村大安路357號',
-    lat: 24.640, lng: 121.760, scale: '★★★★★ 潤泰集團', group: '5star',
+    lat: 24.6223238, lng: 121.7802177, scale: '★★★★★ 潤泰集團', group: '5star',
     detail: '潤泰集團（母公司資本30億）｜2009年標購原力霸水泥冬山廠｜水泥研磨+乾粉砂漿+預拌混凝土｜分公司經理：李宜哲'
   },
   // === 四星：在地龍頭 ===
   {
     name: '宜興預拌混凝土（總部暨冬山一廠）', addr: '冬山鄉龍德工業區德興六路43號',
-    lat: 24.6570, lng: 121.7891, scale: '★★★★☆ 宜蘭最大業者（4廠）', group: '4star',
+    lat: 24.6310386, lng: 121.8224140, scale: '★★★★☆ 宜蘭最大業者（4廠）', group: '4star',
     detail: 'GRMC#040｜資本額1.72億｜1996年設立｜龍德工業區3廠+宜蘭梅洲廠共4廠｜另有三芝廠｜負責人：李興和',
     relations: [{me:'宜興預拌混凝土', members:[{name:'李興和', role:'董事長', companies:['宜興預拌混凝土','武雄實業(董事長)','梅洲混凝土工業(董事)','藍園營造','蘇澳石礦']},{name:'林贊壽', role:'董事', companies:['宜興預拌混凝土','梅洲混凝土工業(董事長)','靖瑋營造(負責人)','蘇澳石礦(負責人)','武雄實業(監察人)','億茂汽車貨運']},{name:'李伯恩', role:'董事', companies:['宜興預拌混凝土']},{name:'陳明月', role:'董事', companies:['宜興預拌混凝土','武雄實業(董事)','梅洲混凝土工業(董事)']},{name:'李松輝', role:'董事', companies:['宜興預拌混凝土']},{name:'謝心悅', role:'董事', companies:['宜興預拌混凝土']},{name:'陳正添', role:'監察人', companies:['宜興預拌混凝土','梅洲混凝土工業(監察人)']}]}
   },
@@ -85,32 +89,32 @@ const markers = [
   // === 三星：中型廠 ===
   {
     name: '久屋預拌混凝土', addr: '冬山鄉龍祥十路19號',
-    lat: 24.6580, lng: 121.7920, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    lat: 24.6278383, lng: 121.8129374, scale: '★★★☆☆ 龍德工業區', group: '3star',
     detail: '資本額8,000萬｜1982年設立｜負責人：簡志耀｜員工26人｜原「久屋建設事業(股)」',
     relations: [{me:'久屋預拌混凝土', members:[{name:'簡志耀', role:'董事長', companies:['久屋預拌混凝土','金滿億珠寶銀樓(板橋)','金寶玉銀樓(板橋)']},{name:'李茂榮', role:'董事', companies:['久屋預拌混凝土']},{name:'游正雄', role:'董事', companies:['久屋預拌混凝土']},{name:'蔡宏裕', role:'監察人', companies:['久屋預拌混凝土']},{name:'張琇喬', role:'監察人', companies:['久屋預拌混凝土']}]}]
   },
   {
     name: '立泰預拌混凝土工業', addr: '冬山鄉龍祥十路5號',
-    lat: 24.6590, lng: 121.7920, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    lat: 24.6278383, lng: 121.8129374, scale: '★★★☆☆ 龍德工業區', group: '3star',
     detail: '資本額5,000萬｜1993年設立｜負責人：楊欣浩｜員工34人｜兼營瀝青混凝土',
     relations: [{me:'立泰預拌混凝土', members:[{name:'楊欣浩', role:'董事長', companies:['立泰預拌混凝土']},{name:'廖淑芬', role:'董事', companies:['立泰預拌混凝土']},{name:'楊純玲', role:'董事', companies:['立泰預拌混凝土']},{name:'林建章', role:'監察人', companies:['立泰預拌混凝土']}]}]
   },
   {
     name: '享正實業', addr: '冬山鄉德興一路42號',
-    lat: 24.6580, lng: 121.7890, scale: '★★★☆☆ 龍德工業區', group: '3star',
+    lat: 24.6247967, lng: 121.8211877, scale: '★★★☆☆ 龍德工業區', group: '3star',
     detail: '資本額4,968萬｜1987年設立｜負責人：林文政｜ISO9002｜2套拌合機+15輛車',
     relations: [{me:'享正實業', members:[{name:'林文政', role:'董事長', companies:['享正實業']},{name:'洪裕健', role:'董事', companies:['享正實業']},{name:'林秀春', role:'監察人', companies:['享正實業']}]}]
   },
   {
     name: '得福混凝土工業', addr: '冬山鄉成興路42號',
-    lat: 24.6680, lng: 121.7950, scale: '★★★☆☆ 老牌在地廠（1979）', group: '3star',
+    lat: 24.6360639, lng: 121.7948693, scale: '★★★☆☆ 老牌在地廠（1979）', group: '3star',
     detail: '資本額6,000萬｜1979年設立｜董事長：連志峯｜與福得混凝土為關聯企業（共享董監事網絡）',
     relations: [{me:'得福混凝土', members:[{name:'連志峯', role:'董事長', companies:['得福混凝土','福得混凝土(董事)','銀燦有限公司(楊梅)']},{name:'吳智翔', role:'董事', companies:['得福混凝土','福得混凝土(董事長)','吉祥機車行(礁溪)']},{name:'連怡雲', role:'董事', companies:['得福混凝土']},{name:'薛豐文', role:'監察人', companies:['得福混凝土','福得混凝土(董事)']}]}]
   },
   // === 二星：小型廠 ===
   {
     name: '福得混凝土工業', addr: '宜蘭市梅洲二路97號',
-    lat: 24.7540, lng: 121.7410, scale: '★★☆☆☆ 梅洲工業區', group: '2star',
+    lat: 24.7805177, lng: 121.7354767, scale: '★★☆☆☆ 梅洲工業區', group: '2star',
     detail: '資本額4,160萬｜1985年設立｜董事長：吳智翔｜連志峯為董事（與得福關聯）',
     relations: [{me:'福得混凝土', members:[{name:'吳智翔', role:'董事長', companies:['福得混凝土','得福混凝土(董事)','吉祥機車行(礁溪)']},{name:'薛豐文', role:'董事', companies:['福得混凝土','得福混凝土(監察人)']},{name:'連志峯', role:'董事', companies:['福得混凝土','得福混凝土(董事長)','銀燦有限公司(楊梅)']},{name:'連志豪', role:'監察人', companies:['福得混凝土']}]}]
   }
