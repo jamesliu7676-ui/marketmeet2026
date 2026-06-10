@@ -25,6 +25,8 @@
 - NLSC 圖磚切換套用至全部 5 檔（使用 Node.js replace script）
 - 「全台概覽」選項修復（動態合併所有非 1-star 標點）
 - 北區 21 處標點資料重新套用至全台地圖
+- 修復 `{ name:'` 重複前綴 bug（全台地圖 JS parse error），補回幸孚土城廠
+- 新增龍形企業（八里廠）— 資本額8,000萬｜1991年｜施阿祥｜ISO-9001｜捷運局合格｜3star
 
 ### In Progress
 - (none)
@@ -52,22 +54,22 @@
 - 地圖用 Leaflet.js，使用 NLSC（國土測繪圖資服務雲）為預設圖磚，OSM 為備選
 - NLSC tiles URL: `https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}`
 - 所有 PowerShell `[System.IO.File]::WriteAllText` 操作曾造成 UTF-8 中文損毀，已全面改用 Node.js fs 模組
-- GitHub Pages 公開網址：https://jamesliu7676-ui.github.io/marketmeet2026/output/花蓮競爭力簡報.html
+- GitHub Pages 公開網址：https://jamesliu7676-ui.github.io/marketmeet2026/output/全台預拌混凝土廠地圖.html
 - 友正集團關係圖：方來興→友誠、友砂、友正貨運、友華加油站；陳東堯→花建實業、友正預拌（監察人）；馮志緯→友正預拌（董事長）
 - 宜興集團關係圖：李興和（董事長）→武雄實業、梅洲混凝土、藍園營造、蘇澳石礦；林贊壽（董事）→梅洲混凝土（董事長）、靖瑋營造、蘇澳石礦（負責人）
 - 得福/福得連家網絡：連志峯（得福董事長/福得董事）、吳智翔（福得董事長/得福董事）、薛豐文（得福監察人/福得董事）
-- 北區龍頭：國產建材（2504）7 廠、亞東預拌（遠東/亞泥）2 廠、台泥 1 廠、力泰建設（5520）2 廠、幸孚（幸福水泥）5 廠
+- 北區龍頭：國產建材（2504）7 廠、亞東預拌（遠東/亞泥）2 廠、台泥 1 廠、力泰建設（5520）2 廠、幸孚（幸福水泥）5 廠、和昌國際工業（4.85億）2 廠、龍形企業（8,000萬）八里廠
 
 ## Relevant Files
 - `D:\James-opencode\marketmeet2026\output\花蓮競爭力簡報.html`: 9 頁互動簡報，GitHub Pages 公開
 - `D:\James-opencode\marketmeet2026\output\花蓮預拌混凝土廠地圖.html`: 花蓮 18 廠 Leaflet 地圖
 - `D:\James-opencode\marketmeet2026\output\宜蘭競爭力簡報.html`: 宜蘭 9 頁互動簡報
 - `D:\James-opencode\marketmeet2026\output\宜蘭預拌混凝土廠地圖.html`: 宜蘭 12 處標點地圖
-- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（含北區 21 標點）
+- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（含北區 23 處標點、NLSC 圖磚、董監事圖譜）
 - `D:\James-opencode\marketmeet2026\data\花蓮北區業者.csv`: 花蓮北區 11 家
 - `D:\James-opencode\marketmeet2026\data\花蓮中南區業者.csv`: 花蓮中南區 9 家（含 3 家停業）
 - `D:\James-opencode\marketmeet2026\data\宜蘭地區業者.csv`: 宜蘭 8 家
-- `D:\James-opencode\marketmeet2026\data\北區業者.csv`: 北區 32 家
+- `D:\James-opencode\marketmeet2026\data\北區業者.csv`: 北區 33 家
 - `D:\James-opencode\marketmeet2026\data\花蓮地區業者一覽.md`: 綜合報告（含花蓮、宜蘭、北區章節）
 - `D:\James-opencode\marketmeet2026\scripts\update_coords.js`: Node.js 座標批次更新腳本
 - `D:\James-opencode\marketmeet2026\scripts\apply_nlsc.js`: NLSC 圖磚切換腳本
