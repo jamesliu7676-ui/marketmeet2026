@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全台 — 預拌混凝土同業競爭力地圖</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif; overflow:hidden; }
+#header {
+  background:#1a3a5c; color:white; padding:10px 20px;
+  display:flex; justify-content:space-between; align-items:center;
+  position:relative; z-index:1000;
+}
+#header h1 { font-size:16px; font-weight:600; white-space:nowrap; }
+#header .right { display:flex; align-items:center; gap:12px; }
+#header select {
+  padding:5px 10px; border-radius:4px; border:1px solid rgba(255,255,255,0.2);
+  background:#0d2a47; color:white; font-size:13px; cursor:pointer;
+  font-family:inherit; outline:none;
+}
+#header select:hover { border-color:rgba(255,255,255,0.4); }
+#header select option { background:#1a3a5c; color:white; }
+#header .info { font-size:12px; color:rgba(255,255,255,0.6); }
+#map { height:calc(100vh - 46px); width:100%; }
+.legend {
+  background:white; padding:12px; border-radius:6px;
+  box-shadow:0 1px 5px rgba(0,0,0,0.3);
+  font-size:13px; line-height:1.6; max-height:360px; overflow-y:auto;
+}
+.legend h4 { margin-bottom:6px; font-size:14px; }
+.legend i { width:14px; height:14px; display:inline-block; border-radius:50%; margin-right:4px; vertical-align:middle; }
+.legend .row { display:flex; align-items:center; gap:4px; margin-bottom:2px; }
+.legend .reg-count { font-size:11px; color:#888; margin-top:4px; }
+.popup-content { font-size:13px; line-height:1.5; }
+.popup-content .name { font-weight:700; font-size:14px; color:#1a3a5c; }
+.popup-content .detail { color:#555; margin-top:2px; }
+.popup-content .scale { margin-top:4px; }
+.popup-content .rel-title { font-weight:700; font-size:13px; color:#1a3a5c; margin-top:8px; padding-top:6px; border-top:1px solid #ddd; }
+.popup-content .rel-graph { margin:4px 0; text-align:center; overflow-x:auto; }
+.popup-content .p-specs { margin-top:4px; font-size:12px; color:#1565c0; font-weight:600; background:#e3f2fd; padding:4px 8px; border-radius:4px; }
+</style>
+</head>
+<body>
+<div id="header">
+  <h1>全台預拌混凝土同業競爭力地圖</h1>
+  <div class="right">
+    <span class="info" id="regionInfo">—</span>
+    <select id="regionSelect">
+      <option value="all">🌏 全台概覽</option>
+      <option value="taipei">🏙️ 北區（台北·新北·基隆）</option>
+      <option value="taoyuan">🏙️ 桃園</option>
+      <option value="hsinchu">🏙️ 新竹·苗栗</option>
+      <option value="taichung">🏙️ 台中·彰化</option>
+      <option value="yunlin">🏙️ 雲林·嘉義·南投</option>
+      <option value="tainan">🏙️ 台南</option>
+      <option value="kaohsiung">🏙️ 高雄</option>
+      <option value="pingtung">🏙️ 屏東</option>
+      <option value="taitung">🏙️ 台東</option>
+      <option value="hualien">🗺️ 花蓮</option>
+      <option value="yilan">🗺️ 宜蘭</option>
+    </select>
+  </div>
+</div>
+<div id="map"></div>
+
+<script>
+const map = L.map('map', { zoomControl: true }).setView([23.8, 121.0], 8);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution:'&copy; OpenStreetMap contributors', maxZoom:18
+}).addTo(map);
+
+const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+const scaleLabels = {'5star':'★★★★★ 全國性大廠','4star':'★★★★☆ 全台布點/在地龍頭','3star':'★★★☆☆ 中型廠','2star':'★★☆☆☆ 小型廠','1star':'★☆☆☆☆ 微型'};
+
+// ====== ALL MARKERS BY REGION ======
+const regions = {
+  hualien: {
+    label:'花蓮', center:[23.85,121.45], zoom:10,
+    markers:[
+      { name:'亞東預拌混凝土（美崙廠）', addr:'花蓮市美工三街12號', lat:23.9932, lng:121.6170, group:'5star',
+        detail:'母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜產能180m³/h',
+        specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷 63,931m³｜人力合計 11人', relations:null },
+      { name:'台灣水泥花蓮廠（預拌混凝土工場）', addr:'花蓮市民孝里精美路2-1號', lat:23.9945, lng:121.6225, group:'5star',
+        detail:'台泥集團｜預拌工場1994年｜花蓮另有水泥廠+和平UHPC中心', specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷由鳳勝代工｜人力合計 10人', relations:null },
+      { name:'鳳勝實業（花蓮廠）', addr:'花蓮市美工五街3號', lat:23.9920, lng:121.6175, group:'4star',
+        detail:'母公司資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠',
+        specs:'設備 3m³×1｜設計產能 130m³/hr｜年銷含代工 114,728m³｜人力合計 12人', relations:null },
+      { name:'鼎泰興預拌混凝土', addr:'新城鄉新城村新興一路1巷6號', lat:24.0370, lng:121.6015, group:'3star',
+        detail:'資本額4,100萬｜2003年設立(原名龍華預拌)｜負責人黃銘華', relations:null },
+      { name:'威神企業', addr:'吉安鄉光華村華城六街35號', lat:23.9485, lng:121.5770, group:'3star',
+        detail:'資本額4,800萬｜1987年｜負責人梁億宏｜預拌+土石採取+廢棄物清除',
+        relations:{me:'威神企業', members:[{name:'梁億宏',role:'董事長',companies:['威神企業','億鍠營造']},{name:'陳月嬌',role:'董事',companies:['威神企業']},{name:'陳玉官',role:'董事',companies:['威神企業']}]}},
+      { name:'友誠有限公司', addr:'秀林鄉和平村和平30-11號', lat:24.3090, lng:121.7495, group:'3star',
+        detail:'資本額3,000萬｜1994年｜負責人方來興｜預拌+瀝青｜和平工業區',
+        relations:{me:'友誠', members:[{name:'方來興',role:'負責人',companies:['友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}},
+      { name:'友正預拌混凝廠', addr:'吉安鄉光華村華工六路31巷2號', lat:23.9470, lng:121.5760, group:'2star',
+        detail:'資本額2,000萬｜1992年｜含崇德廠(秀林)+光復廠｜友正集團核心',
+        specs:'設備 3m³×2｜設計產能 270m³/hr｜年銷 100,000m³｜人力合計 17人',
+        relations:{me:'友正預拌混凝廠', members:[
+          {name:'馮志緯',role:'董事長',companies:['友正預拌混凝廠','友正貨運(監察人)']},
+          {name:'方來興',role:'董事',companies:['友正預拌混凝廠','友誠','友砂預拌廠','友正貨運','友華加油站']},
+          {name:'方彥翔',role:'董事',companies:['友正預拌混凝廠','友砂預拌廠','友正砂石','方嘉建設']},
+          {name:'林化應',role:'董事',companies:['友正預拌混凝廠','友正貨運']},
+          {name:'陳東堯',role:'監察人',companies:['友正預拌混凝廠','花建實業','友正貨運']}]}},
+      { name:'花建實業', addr:'鳳林鎮榮開路39-1號', lat:23.7450, lng:121.4490, group:'2star',
+        detail:'資本額1,800萬｜1990年｜負責人陳東堯(前方來興)｜友正集團關聯',
+        relations:{me:'花建實業', members:[
+          {name:'陳東堯',role:'負責人',companies:['花建實業','友正預拌混凝廠(監察人)','友正貨運']},
+          {name:'方來興',role:'前負責人',companies:['花建實業(前)','友誠','友正預拌混凝廠','友砂預拌廠','友正貨運','友華加油站']}]}},
+      { name:'長雄預拌混凝土廠', addr:'吉安鄉仁安村南海四街148號', lat:23.9745, lng:121.5980, group:'2star',
+        detail:'資本額500萬｜1973年(50年老廠)｜邱氏家族(持股86%)｜年銷100,000m³｜人均效率最高',
+        specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷 100,000m³｜人力合計 13人',
+        relations:{me:'長雄預拌混凝土廠', members:[
+          {name:'邱豐娥',role:'董事長',companies:['長雄預拌混凝土廠','長旭建設']},
+          {name:'邱雪萍',role:'董事',companies:['長雄預拌混凝土廠']},
+          {name:'邱如茵',role:'董事',companies:['長雄預拌混凝土廠']},
+          {name:'邱錫樑',role:'監察人',companies:['長雄預拌混凝土廠','長旭交通']}]}},
+      { name:'友砂預拌廠', addr:'花蓮市國裕里富裕十街50巷17號', lat:23.9930, lng:121.5950, group:'2star',
+        detail:'資本額2,000萬｜1998年｜友正集團關係企業',
+        relations:{me:'友砂預拌廠', members:[
+          {name:'方冠儒',role:'負責人',companies:['友砂預拌廠']},
+          {name:'方來興',role:'董事',companies:['友砂預拌廠','友正預拌混凝廠','友誠','友正貨運','友華加油站']},
+          {name:'方彥翔',role:'董事',companies:['友砂預拌廠','友正預拌混凝廠','友正砂石','方嘉建設']}]}},
+      { name:'大元預拌混凝土', addr:'吉安鄉仁安村南海七街47號', lat:23.9670, lng:121.6035, group:'1star',
+        detail:'資本額500萬｜2022年新設｜負責人温茗勝｜工廠：玉里鎮新民8-1號',
+        relations:{me:'大元預拌混凝土', members:[{name:'温茗勝',role:'負責人',companies:['大元預拌混凝土','大元行','芊成工程']}]}},
+      { name:'定穎預拌混凝土（吉安廠）', addr:'吉安鄉', lat:23.9700, lng:121.5960, group:'2star',
+        detail:'設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜9 人精簡編制',
+        specs:'設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜人力合計 9人', relations:null },
+      { name:'政旺企業（股）', addr:'光復鄉中華路256巷17號', lat:23.6620, lng:121.4230, group:'2star',
+        detail:'資本額500萬｜1980年｜2025/10負責人變更為張榮耀', relations:null },
+      { name:'貫天下預拌混凝土（股）', addr:'瑞穗鄉瑞北村30號', lat:23.4960, lng:121.3760, group:'2star',
+        detail:'資本額50萬(原800萬2022改組)｜負責人王祥富｜月均5,000–6,000m³', relations:null },
+      { name:'陸紀實業有限公司', addr:'瑞穗鄉鶴岡村興鶴路二段368號', lat:23.5300, lng:121.3880, group:'2star',
+        detail:'資本額1,000萬｜1995年｜負責人李煥陞', relations:null },
+      { name:'錦山企業有限公司', addr:'富里鄉石牌村車站街一段35之2號', lat:23.1820, lng:121.2500, group:'2star',
+        detail:'資本額500萬｜1998年｜負責人邱洪章｜前身全章企業社', relations:null },
+      { name:'展信實業有限公司', addr:'玉里鎮大禹里大禹202-4號', lat:23.3700, lng:121.3190, group:'3star',
+        detail:'資本額2,950萬｜1992年｜負責人曾雲嬌｜月均4,000m³｜關係：展信營造', relations:null },
+      { name:'利泰工程行', addr:'光復鄉大馬村中華路382號1樓', lat:23.6640, lng:121.4250, group:'1star',
+        detail:'資本額48萬｜1991年｜合夥組織(鄭火榮)', relations:null }
+    ]
+  },
+  yilan: {
+    label:'宜蘭', center:[24.68,121.77], zoom:11,
+    markers:[
+      { name:'台泥宜蘭分廠', addr:'員山鄉蓁巷村員山路二段438號', lat:24.739, lng:121.721, group:'5star',
+        detail:'台泥集團GRMC#109｜1套拌和設備+19車｜廠長：洪崇智', relations:null },
+      { name:'潤泰精密材料冬山廠', addr:'冬山鄉安平村大安路357號', lat:24.640, lng:121.760, group:'5star',
+        detail:'潤泰集團｜原力霸水泥冬山廠｜水泥研磨+乾粉砂漿+預拌混凝土', relations:null },
+      { name:'宜興預拌混凝土（總部）', addr:'冬山鄉龍德工業區德興六路43號', lat:24.6570, lng:121.7891, group:'4star',
+        detail:'宜蘭最大GRMC#040｜資本額1.72億｜1996年｜負責人:李興和',
+        relations:{me:'宜興預拌混凝土', members:[
+          {name:'李興和',role:'董事長',companies:['宜興預拌混凝土','武雄實業(董事長)','梅洲混凝土(董事)','藍園營造','蘇澳石礦']},
+          {name:'林贊壽',role:'董事',companies:['宜興預拌混凝土','梅洲混凝土(董事長)','靖瑋營造','蘇澳石礦(負責人)','武雄實業(監察人)','億茂汽車貨運']},
+          {name:'李伯恩',role:'董事',companies:['宜興預拌混凝土']},
+          {name:'陳明月',role:'董事',companies:['宜興預拌混凝土','武雄實業(董事)','梅洲混凝土(董事)']},
+          {name:'李松輝',role:'董事',companies:['宜興預拌混凝土']},
+          {name:'謝心悅',role:'董事',companies:['宜興預拌混凝土']},
+          {name:'陳正添',role:'監察人',companies:['宜興預拌混凝土','梅洲混凝土(監察人)']}]}},
+      { name:'宜興預拌混凝土（冬山二廠）', addr:'冬山鄉德興五路36號', lat:24.6575, lng:121.7880, group:'4star',
+        detail:'宜興集團二廠｜3套拌和設備｜2003年', relations:null },
+      { name:'宜興預拌混凝土（冬山三廠）', addr:'冬山鄉德興六路41~43號', lat:24.6565, lng:121.7898, group:'4star',
+        detail:'宜興集團三廠｜2012年', relations:null },
+      { name:'宜興預拌混凝土（宜蘭梅洲廠）', addr:'宜蘭市梅洲二路127號', lat:24.7540, lng:121.7400, group:'4star',
+        detail:'宜興集團梅洲廠｜2013年｜宜蘭市北側梅洲工業區', relations:null },
+      { name:'久屋預拌混凝土', addr:'冬山鄉龍祥十路19號', lat:24.6580, lng:121.7920, group:'3star',
+        detail:'資本額8,000萬｜1982年｜負責人:簡志耀｜員工26人',
+        relations:{me:'久屋預拌混凝土', members:[
+          {name:'簡志耀',role:'董事長',companies:['久屋預拌混凝土','金滿億珠寶銀樓','金寶玉銀樓']},
+          {name:'李茂榮',role:'董事',companies:['久屋預拌混凝土']},
+          {name:'游正雄',role:'董事',companies:['久屋預拌混凝土']},
+          {name:'蔡宏裕',role:'監察人',companies:['久屋預拌混凝土']},
+          {name:'張琇喬',role:'監察人',companies:['久屋預拌混凝土']}]}},
+      { name:'立泰預拌混凝土工業', addr:'冬山鄉龍祥十路5號', lat:24.6590, lng:121.7920, group:'3star',
+        detail:'資本額5,000萬｜1993年｜負責人:楊欣浩｜員工34人｜兼營瀝青混凝土',
+        relations:{me:'立泰預拌混凝土', members:[
+          {name:'楊欣浩',role:'董事長',companies:['立泰預拌混凝土']},
+          {name:'廖淑芬',role:'董事',companies:['立泰預拌混凝土']},
+          {name:'楊純玲',role:'董事',companies:['立泰預拌混凝土']},
+          {name:'林建章',role:'監察人',companies:['立泰預拌混凝土']}]}},
+      { name:'享正實業', addr:'冬山鄉德興一路42號', lat:24.6580, lng:121.7890, group:'3star',
+        detail:'資本額4,968萬｜1987年｜負責人:林文政｜ISO9002｜2套拌合機+15車',
+        relations:{me:'享正實業', members:[
+          {name:'林文政',role:'董事長',companies:['享正實業']},
+          {name:'洪裕健',role:'董事',companies:['享正實業']},
+          {name:'林秀春',role:'監察人',companies:['享正實業']}]}},
+      { name:'得福混凝土工業', addr:'冬山鄉成興路42號', lat:24.6680, lng:121.7950, group:'3star',
+        detail:'資本額6,000萬｜1979年｜董事長:連志峯｜與福得關聯',
+        relations:{me:'得福混凝土', members:[
+          {name:'連志峯',role:'董事長',companies:['得福混凝土','福得混凝土(董事)','銀燦有限公司']},
+          {name:'吳智翔',role:'董事',companies:['得福混凝土','福得混凝土(董事長)','吉祥機車行']},
+          {name:'連怡雲',role:'董事',companies:['得福混凝土']},
+          {name:'薛豐文',role:'監察人',companies:['得福混凝土','福得混凝土(董事)']}]}},
+      { name:'福得混凝土工業', addr:'宜蘭市梅洲二路97號', lat:24.7540, lng:121.7410, group:'2star',
+        detail:'資本額4,160萬｜1985年｜董事長:吳智翔｜連志峯為董事',
+        relations:{me:'福得混凝土', members:[
+          {name:'吳智翔',role:'董事長',companies:['福得混凝土','得福混凝土(董事)','吉祥機車行']},
+          {name:'薛豐文',role:'董事',companies:['福得混凝土','得福混凝土(監察人)']},
+          {name:'連志峯',role:'董事',companies:['福得混凝土','得福混凝土(董事長)','銀燦有限公司']},
+          {name:'連志豪',role:'監察人',companies:['福得混凝土']}]}}
+    ]
+  },
+  taipei: {
+    label:'北區（台北·新北·基隆）', center:[25.03,121.56], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'北區（台北·新北·基隆）', lat:25.03, lng:121.56, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  taoyuan: {
+    label:'桃園', center:[24.99,121.30], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'桃園地區', lat:24.99, lng:121.30, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  hsinchu: {
+    label:'新竹·苗栗', center:[24.68,120.95], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'新竹·苗栗地區', lat:24.68, lng:120.95, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  taichung: {
+    label:'台中·彰化', center:[24.13,120.65], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'台中·彰化地區', lat:24.13, lng:120.65, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  yunlin: {
+    label:'雲林·嘉義·南投', center:[23.55,120.50], zoom:9,
+    markers:[{ name:'📌 資料收集中', addr:'雲林·嘉義·南投地區', lat:23.55, lng:120.50, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  tainan: {
+    label:'台南', center:[23.00,120.25], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'台南地區', lat:23.00, lng:120.25, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  kaohsiung: {
+    label:'高雄', center:[22.65,120.35], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'高雄地區', lat:22.65, lng:120.35, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  pingtung: {
+    label:'屏東', center:[22.55,120.55], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'屏東地區', lat:22.55, lng:120.55, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  },
+  taitung: {
+    label:'台東', center:[22.75,121.10], zoom:10,
+    markers:[{ name:'📌 資料收集中', addr:'台東地區', lat:22.75, lng:121.10, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+  }
+};
+
+// ====== FORCE-DIRECTED GRAPH ======
+function initGraph(containerId, r) {
+  const c = document.getElementById(containerId);
+  if (!c || !r || !r.members) return;
+  const W = 800, H = 480;
+  let nodes = [], edges = [], idCounter = 0;
+  const addNode = (label, type, ref) => { const n = { id:++idCounter, label, type, ref, x:Math.random()*W*0.6+W*0.2, y:Math.random()*H*0.4+H*0.1, vx:0, vy:0, fixed:false }; nodes.push(n); return n; };
+  const addEdge = (a, b) => { edges.push({a,b}); };
+  const root = addNode(r.me, 'company', r.me);
+  r.members.forEach(p => {
+    const pn = addNode(p.name+' '+p.role, 'person', p.name);
+    addEdge(root, pn);
+    p.companies.forEach(cn => {
+      if (cn === r.me) return;
+      let cnNode = nodes.find(n => n.type==='company' && n.ref===cn);
+      if (!cnNode) cnNode = addNode(cn, 'company-sub', cn);
+      addEdge(pn, cnNode);
+    });
+  });
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width',W); svg.setAttribute('height',H);
+  svg.style.display='block'; svg.style.cursor='grab';
+  const defs = document.createElementNS('http://www.w3.org/2000/svg','defs');
+  defs.innerHTML='<filter id="sg"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.25"/></filter>';
+  svg.appendChild(defs);
+
+  const edgeG = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const edgeEls = [];
+  edges.forEach(()=>{const l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('stroke','#90caf9');l.setAttribute('stroke-width','1.2');l.setAttribute('stroke-dasharray','3,2');edgeG.appendChild(l);edgeEls.push(l);});
+  svg.appendChild(edgeG);
+
+  const nodeG = document.createElementNS('http://www.w3.org/2000/svg','g');
+  const nodeEls = nodes.map(n => {
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g'); g.style.cursor='move';
+    const rw = Math.max(80, Math.min(200, n.label.length*10+24));
+    let fill,stroke,tFill,tSize;
+    if (n.type==='company'){fill='#e3f2fd';stroke='#1565c0';tFill='#1565c0';tSize=15;}
+    else if(n.type==='person'){fill='#fff176';stroke='#f9a825';tFill='#6d4c00';tSize=14;}
+    else{fill='#eeeeee';stroke='#9e9e9e';tFill='#616161';tSize=13;}
+    const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',-rw/2);rect.setAttribute('y',-16);rect.setAttribute('width',rw);rect.setAttribute('height',32);
+    rect.setAttribute('rx',6);rect.setAttribute('fill',fill);rect.setAttribute('stroke',stroke);rect.setAttribute('stroke-width','1.2');rect.setAttribute('filter','url(#sg)');
+    g.appendChild(rect);
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('text-anchor','middle');text.setAttribute('dominant-baseline','central');
+    text.setAttribute('font-size',tSize);text.setAttribute('fill',tFill);text.setAttribute('font-weight','600');
+    text.textContent=n.label;g.appendChild(text);g.dataset.id=n.id;nodeG.appendChild(g);return g;
+  });
+  svg.appendChild(nodeG);
+
+  let dragNode=null, dragOffX, dragOffY;
+  function getMousePos(e){const r=svg.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top};}
+  function onDown(e){const g=e.target.closest('g[data-id]');if(!g)return;const n=nodes.find(x=>x.id==g.dataset.id);if(!n)return;e.preventDefault();dragNode=n;n.fixed=true;const p=getMousePos(e);dragOffX=p.x-n.x;dragOffY=p.y-n.y;svg.style.cursor='grabbing';}
+  function onMove(e){if(!dragNode)return;e.preventDefault();const p=getMousePos(e);dragNode.x=p.x-dragOffX;dragNode.y=p.y-dragOffY;}
+  function onUp(){dragNode=null;svg.style.cursor='grab';}
+  svg.addEventListener('mousedown',onDown);document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);
+  svg.addEventListener('touchstart',onDown,{passive:false});document.addEventListener('touchmove',onMove,{passive:false});document.addEventListener('touchend',onUp);
+
+  let anim;
+  function simulate(){
+    const rep=5000,att=0.002,damp=0.85,grav=0.005;
+    for(let i=0;i<nodes.length;i++){const a=nodes[i];if(a.fixed)continue;
+      for(let j=i+1;j<nodes.length;j++){const b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y;let d=Math.sqrt(dx*dx+dy*dy)||1;let f=rep/(d*d);a.vx+=(dx/d)*f;a.vy+=(dy/d)*f;b.vx-=(dx/d)*f;b.vy-=(dy/d)*f;}
+      a.vx+=(W/2-a.x)*grav;a.vy+=(H/2-a.y)*grav;}
+    edges.forEach(e=>{const a=nodes.find(n=>n.id===e.a.id);const b=nodes.find(n=>n.id===e.b.id);if(!a||!b)return;if(a.fixed&&b.fixed)return;let dx=b.x-a.x,dy=b.y-a.y;let d=Math.sqrt(dx*dx+dy*dy)||1;let f=(d-80)*att;if(!a.fixed){a.vx+=(dx/d)*f;a.vy+=(dy/d)*f;}if(!b.fixed){b.vx-=(dx/d)*f;b.vy-=(dy/d)*f;}});
+    let energy=0;
+    nodes.forEach(n=>{if(n.fixed)return;n.vx*=damp;n.vy*=damp;n.x+=n.vx;n.y+=n.vy;n.x=Math.max(20,Math.min(W-20,n.x));n.y=Math.max(20,Math.min(H-20,n.y));energy+=Math.abs(n.vx)+Math.abs(n.vy);});
+    render();if(energy>0.5)anim=requestAnimationFrame(simulate);else anim=null;
+  }
+  function render(){nodeEls.forEach((g,i)=>{g.setAttribute('transform',`translate(${nodes[i].x},${nodes[i].y})`);});edgeEls.forEach((line,i)=>{const e=edges[i];const a=nodes.find(n=>n.id===e.a.id);const b=nodes.find(n=>n.id===e.b.id);if(a&&b){line.setAttribute('x1',a.x);line.setAttribute('y1',a.y);line.setAttribute('x2',b.x);line.setAttribute('y2',b.y);}});}
+  c.innerHTML='';c.appendChild(svg);
+  nodes.forEach(n=>{n.vx+=(Math.random()-0.5)*4;n.vy+=(Math.random()-0.5)*4;});
+  simulate();
+  return ()=>{if(anim)cancelAnimationFrame(anim);document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);document.removeEventListener('touchmove',onMove);document.removeEventListener('touchend',onUp);};
+}
+
+// ====== MAP RENDERING ======
+let currentRegion = 'all';
+let markerLayer = L.layerGroup().addTo(map);
+let graphCleanups = {};
+
+function loadRegion(regionKey) {
+  while(markerLayer.getLayers().length) markerLayer.removeLayer(markerLayer.getLayers()[0]);
+  Object.keys(graphCleanups).forEach(k=>{if(graphCleanups[k]){try{graphCleanups[k]();}catch(e){}delete graphCleanups[k];}});
+
+  const data = regions[regionKey];
+  document.getElementById('regionInfo').textContent = data.label + ' · ' + data.markers.length + ' 個標點';
+
+  data.markers.forEach((m, idx) => {
+    const color = colors[m.group] || '#95a5a6';
+    const icon = L.divIcon({
+      className:'',
+      html:`<div style="width:26px;height:26px;border-radius:50%;background:${color};border:4px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.6)"></div>`,
+      iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-16]
+    });
+    const marker = L.marker([m.lat, m.lng], {icon}).addTo(markerLayer);
+    marker.bindTooltip(m.name, {direction:'top', offset:[0,-6], opacity:0.95});
+
+    let popupHtml = `<div class="popup-content" style="width:800px;max-height:560px;overflow-y:auto">
+      <div class="name">${m.name}</div>
+      <div class="detail">${m.addr}</div>
+      <div class="detail">${m.detail}</div>`;
+    if (m.specs) popupHtml += `<div class="p-specs">${m.specs}</div>`;
+    if (m.relations) {
+      popupHtml += `<div class="rel-title">董監事關係圖譜 <span style="font-weight:400;font-size:10px;color:#999">（可拖曳節點）</span></div>
+        <div class="rel-graph"><div id="g_${regionKey}_${idx}" style="width:800px;height:480px"></div></div>`;
+    }
+    popupHtml += `</div>`;
+    marker.bindPopup(popupHtml, {maxWidth:820, maxHeight:600});
+
+    if (m.relations) {
+      let cleanup;
+      marker.on('popupopen', () => {
+        if (cleanup) cleanup();
+        setTimeout(() => {
+          cleanup = initGraph('g_'+regionKey+'_'+idx, m.relations);
+          graphCleanups[regionKey+'_'+idx] = cleanup;
+        }, 50);
+      });
+      marker.on('popupclose', () => {
+        if (cleanup) { cleanup(); cleanup = null; delete graphCleanups[regionKey+'_'+idx]; }
+      });
+    }
+  });
+
+  if (regionKey === 'all') {
+    const allMarkers = [];
+    Object.keys(regions).forEach(k => {
+      if (k === 'all') return;
+      regions[k].markers.forEach(m => {
+        if (m.group !== '1star') allMarkers.push(m);
+      });
+    });
+    if (allMarkers.length) {
+      const group = L.featureGroup(allMarkers.map(m => L.marker([m.lat, m.lng])));
+      map.fitBounds(group.getBounds().pad(0.08));
+    } else {
+      map.setView([23.8, 121.0], 8);
+    }
+  } else {
+    const markers = regions[regionKey].markers;
+    if (markers.length) {
+      const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
+      map.fitBounds(group.getBounds().pad(0.08));
+    }
+  }
+}
+
+// ====== LEGEND ======
+const legend = L.control({position:'bottomright'});
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div','legend');
+  div.innerHTML='<h4>規模分級</h4>';
+  Object.keys(scaleLabels).forEach(k=>{
+    div.innerHTML+=`<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
+  });
+  div.innerHTML+=`<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
+  return div;
+};
+
+// ====== REGION SWITCH ======
+document.getElementById('regionSelect').addEventListener('change', function() {
+  currentRegion = this.value;
+  loadRegion(currentRegion);
+});
+
+loadRegion('all');
+legend.addTo(map);
+</script>
+</body>
+</html>
