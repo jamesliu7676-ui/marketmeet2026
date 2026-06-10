@@ -371,7 +371,13 @@ function loadRegion(regionKey) {
   while(markerLayer.getLayers().length) markerLayer.removeLayer(markerLayer.getLayers()[0]);
   Object.keys(graphCleanups).forEach(k=>{if(graphCleanups[k]){try{graphCleanups[k]();}catch(e){}delete graphCleanups[k];}});
 
-  const data = regions[regionKey];
+  let data = regions[regionKey];
+  // Build 'all' on the fly from all non-placeholder markers
+  if (regionKey === 'all') {
+    const allM = [];
+    Object.keys(regions).forEach(k => regions[k].markers.forEach(m => { if (m.group !== '1star') allM.push(m); }));
+    data = { label:'全台概覽 · 已完成區域', center:[23.8,121.0], zoom:8, markers:allM };
+  }
   document.getElementById('regionInfo').textContent = data.label + ' · ' + data.markers.length + ' 個標點';
 
   data.markers.forEach((m, idx) => {
@@ -411,26 +417,11 @@ function loadRegion(regionKey) {
     }
   });
 
-  if (regionKey === 'all') {
-    const allMarkers = [];
-    Object.keys(regions).forEach(k => {
-      if (k === 'all') return;
-      regions[k].markers.forEach(m => {
-        if (m.group !== '1star') allMarkers.push(m);
-      });
-    });
-    if (allMarkers.length) {
-      const group = L.featureGroup(allMarkers.map(m => L.marker([m.lat, m.lng])));
-      map.fitBounds(group.getBounds().pad(0.08));
-    } else {
-      map.setView([23.8, 121.0], 8);
-    }
+  if (data.markers.length) {
+    const group = L.featureGroup(data.markers.map(m => L.marker([m.lat, m.lng])));
+    map.fitBounds(group.getBounds().pad(0.08));
   } else {
-    const markers = regions[regionKey].markers;
-    if (markers.length) {
-      const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
-      map.fitBounds(group.getBounds().pad(0.08));
-    }
+    map.setView(data.center, data.zoom);
   }
 }
 
