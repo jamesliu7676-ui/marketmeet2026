@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>花蓮與吉安 — 預拌混凝土廠競爭力比較</title>
+<title>花蓮地區 — 預拌混凝土廠競爭力比較</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
@@ -23,11 +23,9 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 .slide.active { opacity:1; pointer-events:auto; transform:translateY(0); }
 .slide-inner { width:100%; max-width:1280px; }
 
-/* Map slide */
 .map-slide { padding:0; }
 #map { width:100%; height:100%; z-index:1; }
 
-/* Popup styles */
 .popup-content { font-size:12px; line-height:1.5; max-height:360px; overflow-y:auto; }
 .popup-content .p-name { font-weight:700; font-size:14px; color:#1a3a5c; }
 .popup-content .p-detail { color:#555; margin-top:1px; }
@@ -82,9 +80,6 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 .summary-card .stat { font-family:'JetBrains Mono',monospace; font-size:var(--s2); color:var(--accent); font-weight:700; }
 .summary-card .label { font-size:var(--t4); color:var(--ink-3); margin-top:4px; }
 .summary-card .note { font-size:12px; color:var(--ink-2); margin-top:8px; }
-.badge-gold { display:inline-block; background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; padding:2px 10px; border-radius:4px; font-size:11px; font-weight:700; }
-.badge-silver { display:inline-block; background:linear-gradient(135deg,#9ca3af,#6b7280); color:#fff; padding:2px 10px; border-radius:4px; font-size:11px; font-weight:700; }
-.badge-bronze { display:inline-block; background:linear-gradient(135deg,#d97706,#92400e); color:#fff; padding:2px 10px; border-radius:4px; font-size:11px; font-weight:700; }
 
 .closing { text-align:center; }
 .closing .big { font-size:var(--s1); font-weight:900; line-height:1.3; background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:16px; }
@@ -96,10 +91,12 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 .legend-slide i { width:14px; height:14px; display:inline-block; border-radius:50%; margin-right:4px; vertical-align:middle; }
 .legend-slide .row { display:flex; align-items:center; gap:4px; margin-bottom:3px; }
 
-/* Leaflet overrides for dark theme */
 .leaflet-container { background:#0a0e27 !important; }
 .leaflet-popup-content-wrapper { border-radius:8px; }
 .leaflet-control-zoom a { background:var(--bg-2) !important; color:var(--ink) !important; border-color:rgba(255,255,255,0.1) !important; }
+
+.region-divider { text-align:center; margin:24px 0 10px; padding:8px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06); }
+.region-divider span { font-size:13px; color:var(--accent-2); font-weight:600; letter-spacing:2px; }
 
 @media (max-width:900px) {
   .slide { padding:40px 30px; }
@@ -112,7 +109,7 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 
 <div id="progress"></div>
 <div id="section-tag">引起動機</div>
-<div id="pageInfo">1 / 10</div>
+<div id="pageInfo">1 / 11</div>
 <div id="hint">← 方向鍵 / 點擊兩側 →</div>
 
 <main id="deck">
@@ -121,8 +118,8 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <section class="slide active" data-slide="1" data-section="引起動機">
   <div class="slide-inner cover">
     <div class="tag">MARKET MEET 2026</div>
-    <h1>花蓮與吉安<br>預拌混凝土廠<br>競爭力比較</h1>
-    <p class="sub">亞東 · 台泥 · 鳳勝 · 友正 · 長雄 · 定穎 · 鼎泰興 · 威神 · 花建 · 友誠 · 友砂 · 大元</p>
+    <h1>花蓮地區<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">北區 11 家 · 中南區 6 家 · 合計 17 家營業中業者</p>
     <p class="meta">資料整合：工商登記 / 競爭力調查 / 產能統計 ｜ 2025 年度數據</p>
   </div>
 </section>
@@ -131,8 +128,8 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <section class="slide" data-slide="2" data-section="引起動機">
   <div class="slide-inner" style="text-align:center;max-width:800px">
     <span class="kicker">核心問題</span>
-    <div class="t1" style="margin-bottom:20px">花蓮北區預拌混凝土市場，<br>誰是產能與效率冠軍？</div>
-    <p class="t3" style="color:var(--ink-3)">從設備、產能、銷售量、人力配置到董監事網絡，一次看清 12 家業者競爭態勢。</p>
+    <div class="t1" style="margin-bottom:20px">花蓮預拌混凝土市場，<br>誰是各區產能與效率冠軍？</div>
+    <p class="t3" style="color:var(--ink-3)">北區以集團大廠為主（月銷 45K–50K m³），中南區以在地小型家族廠為主（月銷 ~20K m³），一次看清 17 家業者競爭態勢。</p>
   </div>
 </section>
 
@@ -141,34 +138,41 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
   <div id="map"></div>
 </section>
 
-<!-- 4: Comparison Table -->
+<!-- 4: North Comparison Table -->
 <section class="slide" data-slide="4" data-section="維持注意">
   <div class="slide-inner">
     <span class="kicker">全面比較</span>
-    <div class="t2">六廠總體戰力表</div>
+    <div class="t2">北區七廠總體戰力表</div>
     <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
     <div class="comp-wrap">
       <table class="comp-table" id="mainTable">
         <thead><tr>
           <th onclick="sortTable(0)">項目</th>
-          <th onclick="sortTable(1)">亞東</th>
-          <th onclick="sortTable(2)">台泥</th>
-          <th onclick="sortTable(3)">鳳勝</th>
-          <th onclick="sortTable(4)">友正</th>
-          <th onclick="sortTable(5)">長雄</th>
-          <th onclick="sortTable(6)">定穎</th>
+          <th onclick="sortTable(1)">亞東<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">美崙廠</span></th>
+          <th onclick="sortTable(2)">台泥<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">花蓮廠</span></th>
+          <th onclick="sortTable(3)">鳳勝<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">花蓮廠</span></th>
+          <th onclick="sortTable(4)">友正<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">吉安廠</span></th>
+          <th onclick="sortTable(5)">長雄<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">吉安廠</span></th>
+          <th onclick="sortTable(6)">定穎<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">吉安廠</span></th>
+          <th onclick="sortTable(7)">花建實業<br><span style="font-size:13px;font-weight:400;color:var(--ink-3)">鳳林廠</span></th>
         </tr></thead>
         <tbody>
-          <tr><td>設備（套）</td><td>3m³×1</td><td>3m³×1</td><td>3m³×1</td><td class="hl">3m³×2</td><td>3m³×1</td><td>2m³×1</td></tr>
-          <tr><td>設計產能 m³/hr</td><td>140</td><td>140</td><td>130</td><td class="hl">270</td><td>140</td><td>80</td></tr>
-          <tr><td>114年銷售量 m³</td><td>63,931</td><td>由鳳勝代工</td><td class="hl">70,000 + 44,728<br><span style="font-size:12px;color:var(--ink-3)">（自售 + 台泥代工）</span></td><td>100,000</td><td>100,000</td><td>30,000</td></tr>
-          <tr><td>生產</td><td>3</td><td>2</td><td>4</td><td class="hl">7</td><td>4</td><td>2</td></tr>
-          <tr><td>業務</td><td>2</td><td>1</td><td>2</td><td class="hl">3</td><td>2</td><td>1</td></tr>
-          <tr><td>品管</td><td>2</td><td>2</td><td>3</td><td>4</td><td>4</td><td class="hl">5</td></tr>
-          <tr><td>調度</td><td>1</td><td>2</td><td>1</td><td>2</td><td>2</td><td>1</td></tr>
-          <tr><td>車管</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
-          <tr><td>管理</td><td>3</td><td>3</td><td>2</td><td>1</td><td>1</td><td>1</td></tr>
-          <tr><td class="hl">人力合計</td><td>11</td><td>10</td><td>12</td><td class="hl">17</td><td>13</td><td>9</td></tr>
+          <tr><td>設備（套）</td><td>3m³×1</td><td>3m³×1</td><td>3m³×1</td><td class="hl">3m³×2</td><td>3m³×1</td><td>2m³×1</td><td>3m³×1</td></tr>
+          <tr><td>設計產能 m³/hr</td><td>140</td><td>140</td><td>130</td><td class="hl">270</td><td>140</td><td>80</td><td>120</td></tr>
+          <tr><td>年銷售量 m³</td><td>63,931</td><td>由鳳勝代工</td><td class="hl">70,000+44,728<br><span style="font-size:12px;color:var(--ink-3)">（自售+代工）</span></td><td>100,000</td><td>100,000</td><td>30,000</td><td>60,000</td></tr>
+          <tr><td colspan="8" style="padding:4px 10px;font-size:13px;font-weight:600;color:var(--accent-2);background:rgba(255,255,255,0.02)">人力配置</td></tr>
+          <tr><td style="padding-left:20px">生產操作</td><td>2</td><td>1</td><td>3</td><td>2</td><td>1</td><td>2</td><td>4</td></tr>
+          <tr><td style="padding-left:20px">機修</td><td>1</td><td>1</td><td>1</td><td>0</td><td>2</td><td>0</td><td>0</td></tr>
+          <tr><td style="padding-left:20px">移工</td><td>0</td><td>0</td><td>0</td><td class="hl">5</td><td>1</td><td>0</td><td class="hl">4</td></tr>
+          <tr><td style="padding-left:20px;font-weight:600">生產小計</td><td>3</td><td>2</td><td>4</td><td class="hl">7</td><td>4</td><td>2</td><td class="hl">8</td></tr>
+          <tr><td>業務</td><td>2</td><td>1</td><td>2</td><td class="hl">3</td><td>2</td><td>1</td><td>2</td></tr>
+          <tr><td style="padding-left:20px">品管</td><td>2</td><td>2</td><td>3</td><td>3</td><td>3</td><td class="hl">5</td><td>3</td></tr>
+          <tr><td style="padding-left:20px">移工</td><td>0</td><td>0</td><td>0</td><td>1</td><td>1</td><td>0</td><td>0</td></tr>
+          <tr><td style="padding-left:20px;font-weight:600">品管小計</td><td>2</td><td>2</td><td>3</td><td>4</td><td>4</td><td class="hl">5</td><td>3</td></tr>
+          <tr><td>調度</td><td>1</td><td>2</td><td>1</td><td>2</td><td>2</td><td>1</td><td>1</td></tr>
+          <tr><td>車管</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+          <tr><td>管理</td><td>3</td><td>3</td><td>2</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+          <tr><td class="hl">人力合計</td><td>11</td><td>10</td><td>12</td><td class="hl">17</td><td>13</td><td>9</td><td>16</td></tr>
         </tbody>
       </table>
     </div>
@@ -180,7 +184,7 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <section class="slide" data-slide="5" data-section="維持注意">
   <div class="slide-inner">
     <span class="kicker">產能與銷售</span>
-    <div class="t2">設計產能 vs 年銷售量</div>
+    <div class="t2">北區設計產能 vs 年銷售量</div>
     <div class="split">
       <div class="chart-wrap"><canvas id="barChart"></canvas></div>
       <div>
@@ -200,7 +204,7 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <section class="slide" data-slide="6" data-section="維持注意">
   <div class="slide-inner">
     <span class="kicker">銷售分析</span>
-    <div class="t2">114 年度銷售量比較（m³）</div>
+    <div class="t2">北區 114 年度銷售量比較（m³）</div>
     <div class="chart-wrap"><canvas id="salesChart"></canvas></div>
     <p class="t4" style="color:var(--ink-3);margin-top:8px;text-align:center">鳳勝含代工居實質龍頭 · 友正與長雄以 100,000 m³ 並列</p>
   </div>
@@ -210,43 +214,96 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <section class="slide" data-slide="7" data-section="維持注意">
   <div class="slide-inner">
     <span class="kicker">人力配置</span>
-    <div class="t2">各廠人力結構比較</div>
+    <div class="t2">北區各廠人力結構比較</div>
     <div class="chart-wrap"><canvas id="personnelChart"></canvas></div>
     <p class="t4" style="color:var(--ink-3);margin-top:6px;text-align:center">友正 17 人配置最龐大 · 定穎 9 人最精簡</p>
   </div>
 </section>
 
-<!-- 8: Insights -->
+<!-- 8: South-Central Overview -->
 <section class="slide" data-slide="8" data-section="維持注意">
   <div class="slide-inner">
-    <span class="kicker">關鍵發現</span>
-    <div class="t2">競爭力亮點</div>
-    <div class="three-col" style="margin-top:20px">
-      <div class="type-card">
-        <span class="badge">產能效率</span>
-        <h3>友正吉安廠</h3>
-        <p>雙線 270 m³/hr 居冠<br>年銷 100,000 m³<br>友正集團在地龍頭</p>
+    <span class="kicker">中南區市場</span>
+    <div class="t2">壽豐溪以南 — 在地小型廠競爭格局</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:10px">月銷量約 20,000 m³。以在地家族廠為主，貫天下與展信為區內最大，友正光復廠為跨區經營代表。</p>
+    <div style="overflow-x:auto;border-radius:10px;border:1px solid rgba(255,255,255,0.06)">
+    <table class="comp-table" style="font-size:15px">
+      <thead><tr>
+        <th>公司</th><th>資本額</th><th>設立</th><th>負責人</th><th>所在地</th><th>月銷量估</th><th>備註</th>
+      </tr></thead>
+      <tbody>
+        <tr><td>展信實業</td><td>2,950萬</td><td>1992</td><td>曾雲嬌</td><td>玉里鎮</td><td class="hl">4,000 m³</td><td>關係：展信營造</td></tr>
+        <tr><td>貫天下預拌</td><td>50萬</td><td>1996/2022</td><td>王祥富</td><td>瑞穗鄉</td><td class="hl">5,000–6,000 m³</td><td>2022年改組</td></tr>
+        <tr><td>政旺企業</td><td>500萬</td><td>1980</td><td>張榮耀</td><td>光復鄉</td><td>—</td><td>五兄弟家族</td></tr>
+        <tr><td>陸紀實業</td><td>1,000萬</td><td>1995</td><td>李煥陞</td><td>瑞穗鄉</td><td>—</td><td>—</td></tr>
+        <tr><td>錦山企業</td><td>500萬</td><td>1998</td><td>邱洪章</td><td>富里鄉</td><td>—</td><td>前身全章企業社</td></tr>
+        <tr><td>利泰工程行</td><td>48萬</td><td>1991</td><td>鄭火榮</td><td>光復鄉</td><td>—</td><td>合夥組織</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <div class="summary-grid" style="margin-top:14px">
+      <div class="summary-card"><div class="stat">6</div><div class="label">營業中家數</div><div class="note">光復·瑞穗·玉里·富里</div></div>
+      <div class="summary-card"><div class="stat">3</div><div class="label">已停業家數</div><div class="note">友豐·台玉·永固（皆曾設玉里廠）</div></div>
+      <div class="summary-card"><div class="stat">~20K</div><div class="label">月銷量 (m³)</div><div class="note">約北區之 40%</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9: 友正集團跨區布局 -->
+<section class="slide" data-slide="9" data-section="維持注意">
+  <div class="slide-inner">
+    <span class="kicker">跨區布局</span>
+    <div class="t2">友正集團 — 花蓮唯一跨北中南區業者</div>
+    <div class="split">
+      <div>
+        <p class="t3">以方來興為核心的在地集團</p>
+        <ul>
+          <li>北區：吉安本廠 + 崇德廠（秀林）+ 友誠（和平工業區）+ 友砂（花蓮市）</li>
+          <li>中南區：光復廠 — 唯一跨區設廠的在地業者</li>
+          <li>集團網絡：友正、友誠、友砂、友正貨運、友正砂石、友華加油站、花建實業</li>
+          <li>方來興擔任 5 家公司董監事，形成緊密網絡</li>
+        </ul>
       </div>
-      <div class="type-card">
-        <span class="badge">人均銷售</span>
-        <h3>長雄吉安廠</h3>
-        <p>13 人創造 100,000 m³<br>人均 7,692 m³ 冠群<br>50 年老廠經驗優勢</p>
-      </div>
-      <div class="type-card">
-        <span class="badge">集團資源</span>
-        <h3>鳳勝花蓮廠</h3>
-        <p>含代工 114,728 m³<br>台泥+官田鋼鐵背景<br>全台 11 預拌廠布點</p>
+      <div class="summary-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+        <div class="summary-card"><div class="stat" style="font-size:var(--t1)">7</div><div class="label">集團關係企業</div></div>
+        <div class="summary-card"><div class="stat" style="font-size:var(--t1)">4</div><div class="label">預拌廠數</div></div>
+        <div class="summary-card"><div class="stat" style="font-size:var(--t1)">270</div><div class="label">北區產能 m³/hr</div></div>
+        <div class="summary-card"><div class="stat" style="font-size:var(--t1)">北+南</div><div class="label">跨區布局</div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- 9: Closing -->
-<section class="slide" data-slide="9" data-section="喚起行動">
-<section class="slide" data-slide="10" data-section="喚起行動">
+<!-- 10: Insights -->
+<section class="slide" data-slide="10" data-section="維持注意">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">北區產能效率</span>
+        <h3>友正吉安廠</h3>
+        <p>雙線 270 m³/hr 居冠<br>年銷 100,000 m³<br>跨區布局光復廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">北區人均銷售</span>
+        <h3>長雄吉安廠</h3>
+        <p>13 人創造 100,000 m³<br>人均 7,692 m³ 冠群<br>50 年老廠經驗優勢</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">中南區龍頭</span>
+        <h3>貫天下＋展信</h3>
+        <p>合計月銷 9K–10K m³<br>占中南區約 50%<br>在地小型廠主力</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 11: Closing -->
+<section class="slide" data-slide="11" data-section="喚起行動">
   <div class="slide-inner closing">
-    <div class="big">花蓮北區預拌<br>市場競爭格局</div>
-    <p class="cta">集團大廠（友正、鳳勝）主導產能與銷量，<br>在地中小廠（長雄）以高效率與客戶關係固守市場</p>
+    <div class="big">花蓮預拌<br>市場競爭格局</div>
+    <p class="cta">北區：集團大廠（友正、鳳勝）主導產能與銷量，在地中小廠（長雄）以高效率固守市場<br>中南區：在地家族廠各據一方，貫天下與展信為區域主力</p>
     <button class="btn" onclick="goto(1)">重新觀看</button>
     <p class="t4" style="color:var(--ink-3);margin-top:12px">滑到第 3 頁可操作地圖 · 點擊廠標查看明細與董監事圖譜</p>
   </div>
@@ -257,8 +314,8 @@ body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--
 <script>
 // ====== SLIDE NAVIGATION ======
 let currentSlide = 1;
-const totalSlides = 9;
-const sections = ['引起動機','引起動機','維持注意','維持注意','維持注意','維持注意','維持注意','喚起行動','喚起行動'];
+const totalSlides = 11;
+const sections = ['引起動機','引起動機','維持注意','維持注意','維持注意','維持注意','維持注意','維持注意','維持注意','維持注意','喚起行動'];
 let charts = {};
 
 function goto(n) {
@@ -295,7 +352,8 @@ function sortTable(col) {
   const rows = Array.from(tbody.querySelectorAll('tr'));
   sortDir[col] = !(sortDir[col]) || undefined;
   const dir = sortDir[col] ? 1 : -1;
-  rows.sort((a,b)=>{
+  const dataRows = rows.filter(r => r.cells.length > col);
+  dataRows.sort((a,b)=>{
     let va=a.cells[col].textContent.trim(), vb=b.cells[col].textContent.trim();
     let na=parseFloat(va.replace(/[^0-9.]/g,'')), nb=parseFloat(vb.replace(/[^0-9.]/g,''));
     if (!isNaN(na)&&!isNaN(nb)) return (na-nb)*dir;
@@ -305,8 +363,8 @@ function sortTable(col) {
 }
 
 // ====== MAP ======
-const map = L.map('map', { zoomControl: true }).setView([23.93, 121.55], 11);
-const osm = const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const map = L.map('map', { zoomControl: true }).setView([23.80, 121.40], 10);
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
 });
 const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
@@ -314,8 +372,6 @@ const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsC
 });
 nlsc.addTo(map);
 L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
-
-L.control.layers({ '\u570b\u571f\u6e2c\u7e6a\u5716\u8cc7\uff08\u7cbe\u78ba\uff09':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
 
 const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
 
@@ -325,7 +381,6 @@ function initGraph(containerId, r) {
   if (!c || !r || !r.members) return;
   const W = 800, H = 480;
 
-  // Build nodes & edges
   let nodes = [], edges = [];
   let idCounter = 0;
   const addNode = (label, type, ref) => { const n = { id: ++idCounter, label, type, ref, x: Math.random()*W*0.6+W*0.2, y: Math.random()*H*0.4+H*0.1, vx:0, vy:0, fixed:false }; nodes.push(n); return n; };
@@ -353,7 +408,6 @@ function initGraph(containerId, r) {
   defs.innerHTML = `<filter id="sg"><feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.25"/></filter>`;
   svg.appendChild(defs);
 
-  // Edge group
   const edgeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   const edgeEls = [];
   edges.forEach(() => {
@@ -366,7 +420,6 @@ function initGraph(containerId, r) {
   });
   svg.appendChild(edgeG);
 
-  // Node group
   const nodeG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
   const nodeEls = nodes.map(n => {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -401,7 +454,6 @@ function initGraph(containerId, r) {
   });
   svg.appendChild(nodeG);
 
-  // Drag handling
   let dragNode = null, dragOffX, dragOffY;
   function getNodeByEl(el) {
     const g = el.closest('g[data-id]');
@@ -444,14 +496,12 @@ function initGraph(containerId, r) {
   document.addEventListener('touchmove', onMove, {passive:false});
   document.addEventListener('touchend', onUp);
 
-  // Force simulation
   let anim;
   function simulate() {
     const rep = 5000, att = 0.002, damp = 0.85, grav = 0.005;
     for (let i = 0; i < nodes.length; i++) {
       const a = nodes[i];
       if (a.fixed) continue;
-      // Repulsion
       for (let j = i + 1; j < nodes.length; j++) {
         const b = nodes[j];
         let dx = a.x - b.x, dy = a.y - b.y;
@@ -462,11 +512,9 @@ function initGraph(containerId, r) {
         b.vx -= (dx/d) * f;
         b.vy -= (dy/d) * f;
       }
-      // Gravity
       a.vx += (W/2 - a.x) * grav;
       a.vy += (H/2 - a.y) * grav;
     }
-    // Attraction along edges
     edges.forEach(e => {
       const a = nodes.find(n => n.id === e.a.id);
       const b = nodes.find(n => n.id === e.b.id);
@@ -478,7 +526,6 @@ function initGraph(containerId, r) {
       if (!a.fixed) { a.vx += (dx/d) * f; a.vy += (dy/d) * f; }
       if (!b.fixed) { b.vx -= (dx/d) * f; b.vy -= (dy/d) * f; }
     });
-    // Update
     let energy = 0;
     nodes.forEach(n => {
       if (n.fixed) return;
@@ -509,11 +556,9 @@ function initGraph(containerId, r) {
 
   c.innerHTML = '';
   c.appendChild(svg);
-  // Initial kick
   nodes.forEach(n => { n.vx += (Math.random() - 0.5) * 4; n.vy += (Math.random() - 0.5) * 4; });
   simulate();
 
-  // Return cleanup
   return () => {
     if (anim) cancelAnimationFrame(anim);
     document.removeEventListener('mousemove', onMove);
@@ -523,8 +568,9 @@ function initGraph(containerId, r) {
   };
 }
 
-// Marker data with relations
+// Marker data
 const markersData = [
+  // === 北區 ===
   { name:'亞東預拌混凝土（美崙廠）', addr:'花蓮市美工三街12號', lat:24.0164108, lng:121.6320073, group:'5star',
     detail:'母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜產能180m³/h',
     specs:'設備 3m³×1｜設計產能 140m³/hr｜年銷 63,931m³｜人力合計 11人', relations:null },
@@ -588,9 +634,23 @@ const markersData = [
   { name:'定穎預拌混凝土（吉安廠）', addr:'吉安鄉（詳細地址待確認）', lat:23.9700, lng:121.5960, group:'2star',
     detail:'設備 2m³×1 套｜產能 80 m³/hr｜年銷 30,000 m³｜9 人精簡編制｜主攻利基市場',
     specs:'設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜人力合計 9人',
-    relations:null }
+    relations:null },
+  // === 中南區 ===
+  { name:'展信實業有限公司', addr:'玉里鎮大禹里大禹202-4號', lat:23.3795730, lng:121.3253466, group:'3star',
+    detail:'資本額2,950萬｜1992年設立｜負責人曾雲嬌｜月均4,000m³｜關係：展信營造', relations:null },
+  { name:'政旺企業（股）', addr:'光復鄉中華路256巷17號', lat:23.6707166, lng:121.4242939, group:'2star',
+    detail:'資本額500萬｜1980年設立｜2025/10負責人變更為張榮耀｜五兄弟家族企業', relations:null },
+  { name:'貫天下預拌混凝土（股）', addr:'瑞穗鄉瑞北村30號', lat:23.5324636, lng:121.3763246, group:'2star',
+    detail:'資本額50萬(原800萬2022改組)｜負責人王祥富｜月均5,000–6,000m³', relations:null },
+  { name:'陸紀實業有限公司', addr:'瑞穗鄉鶴岡村興鶴路二段368號', lat:23.5593331, lng:121.3958327, group:'2star',
+    detail:'資本額1,000萬｜1995年｜負責人李煥陞', relations:null },
+  { name:'錦山企業有限公司', addr:'富里鄉石牌村車站街一段35之2號', lat:23.1827030, lng:121.2516392, group:'2star',
+    detail:'資本額500萬｜1998年｜負責人邱洪章｜前身全章企業社(1992)｜家族經營', relations:null },
+  { name:'利泰工程行', addr:'光復鄉大馬村中華路382號1樓', lat:23.6640, lng:121.4250, group:'1star',
+    detail:'資本額48萬｜1991年｜合夥組織(鄭火榮)｜FTC載明欠缺合法工廠登記證', relations:null }
 ];
 
+const allMarkers = [];
 markersData.forEach((m, idx) => {
   const color = colors[m.group] || '#95a5a6';
   const icon = L.divIcon({
@@ -599,6 +659,7 @@ markersData.forEach((m, idx) => {
     iconSize:[26,26], iconAnchor:[13,13], popupAnchor:[0,-16]
   });
   const marker = L.marker([m.lat, m.lng], {icon}).addTo(map);
+  allMarkers.push(marker);
   marker.bindTooltip(m.name, {direction:'top', offset:[0,-6], opacity:0.95});
 
   let popupHtml = `<div class="popup-content" style="width:800px;max-height:560px;overflow-y:auto">
@@ -640,7 +701,7 @@ legend.onAdd = function() {
 };
 legend.addTo(map);
 
-map.fitBounds(L.featureGroup(markersData.map(m=>L.marker([m.lat,m.lng]))).getBounds().pad(0.1));
+map.fitBounds(L.featureGroup(allMarkers).getBounds().pad(0.1));
 
 // ====== CHARTS ======
 function lazyCharts(n) {
