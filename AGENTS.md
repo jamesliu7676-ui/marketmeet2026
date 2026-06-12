@@ -38,13 +38,16 @@
 - TRMC 補入業者（15 家）：世芳預拌混凝土（樹林）、頭份混凝土（苗栗）、民峰實業梧棲廠（梧棲）、野馬預拌混凝土（龍井）、埔塩預拌混凝土（埔鹽）、有駿預拌混凝土（埤頭）、盛記預拌混凝土（斗六）、丁丁預拌混凝土（玉井）、安筑混凝土（新營）、玉楠混凝土楠西廠（楠西）、高屏預拌混凝土（美濃）、城夆預拌混凝土九如廠（九如）、超群混凝土內埔廠（內埔）、禹盛混凝土（三星）、梅洲混凝土（宜蘭市）
 - 全台地圖現有 **175 處標點**（含 15 家 TRMC 補入）
 - 右下角規模分級圖例改為全國性混凝土公司統計（依全省廠數排序，含公司名稱+廠數）
+- **全台地圖 JS 語法錯誤修復**：部分區域原最後一個標點缺少結尾逗號（因原為陣列尾項），插入 TRMC 新增標點後產生 `Unexpected token '{'`。以 Node.js 腳本補回各區域 markers array 中缺少的逗號，驗證 `new Function()` 迴圈所有 11 區域無誤
+- **全國性公司廠數核對與補入**：比對 TRMC 會員資料發現多數公司缺漏，已補入 34 廠（鳳勝+6、國產+6、台泥+7、環球+6、和昌+2、宜興+1、幸孚+1、毅和+1、興威+1、竑榮+3），總計 **209 處標點**
+- **GitHub Pages 部署確認**：地圖 0 console error，下拉選單 11 區域 + 全台概覽正常運作，圖例與圖磚正確顯示
+- **`Unexpected token '{'` 除錯完成**：根因為 GitHub Pages 快取未重建，持續服務舊版（缺少逗號）。經 push 觸發重建後恢復正常
 
 ### In Progress
-- 確認 GitHub Pages 部署後新 15 處標點正常顯示
-- 各區域市場態勢比較表與競爭力簡報準備（全台 11 區資料皆已就緒）
+- (none — 地圖已穩定)
 
 ### Blocked
-- TRMC 會員名錄爬取方式：GET 分頁 `member.asp?page=N` 可直接擷取，無需表單 submit
+- (none)
 
 ## Key Decisions
 - 董監事關係圖譜只顯示三星（含）以下業者，五星（亞東、台泥）及四星（鳳勝）不顯示
@@ -59,7 +62,6 @@
 - 地圖經緯度更新需用 Node.js (`fs.readFileSync/writeFileSync` with 'utf8')，禁用 PowerShell `[System.IO.File]::WriteAllText` 以避免 UTF-8 編碼損毀
 
 ## Next Steps
-- 確認 GitHub Pages 部署後台東 10 處 + TRMC 15 處新增標點正常顯示
 - 建立各區域市場態勢比較表與競爭力簡報（全台 11 區資料皆已就緒）
 
 ## Critical Context
@@ -78,7 +80,7 @@
 - `D:\James-opencode\marketmeet2026\output\花蓮預拌混凝土廠地圖.html`: 花蓮 18 廠 Leaflet 地圖
 - `D:\James-opencode\marketmeet2026\output\宜蘭競爭力簡報.html`: 宜蘭 9 頁互動簡報
 - `D:\James-opencode\marketmeet2026\output\宜蘭預拌混凝土廠地圖.html`: 宜蘭 12 處標點地圖
-- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（175 處標點全區完整、NLSC 圖磚、董監事圖譜）
+- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（209 處標點全區完整、NLSC 圖磚、董監事圖譜、全國性公司動態統計圖例）
 - `D:\James-opencode\marketmeet2026\data\花蓮北區業者.csv`: 花蓮北區 11 家
 - `D:\James-opencode\marketmeet2026\data\花蓮中南區業者.csv`: 花蓮中南區 9 家（含 3 家停業）
 - `D:\James-opencode\marketmeet2026\data\宜蘭地區業者.csv`: 宜蘭 8 家
