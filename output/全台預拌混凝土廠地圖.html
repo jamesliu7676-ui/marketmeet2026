@@ -484,16 +484,59 @@ const regions = {
     ]
   },
   tainan: {
-    label:'台南', center:[23.00,120.25], zoom:10,
-    markers:[{ name:'📌 資料收集中', addr:'台南地區', lat:23.00, lng:120.25, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+    label:'台南', center:[23.05,120.25], zoom:9,
+    markers:[
+      { name:'國產建材實業（台南廠）', addr:'台南市永康區洲尾街62號', lat:23.023, lng:120.250, group:'5star',
+        detail:'國產建材(2504)｜台南廠｜負責人楊坪林', relations:null },
+      { name:'亞東預拌混凝土（台南廠）', addr:'台南市南區新平路27號', lat:22.970, lng:120.180, group:'5star',
+        detail:'亞東預拌(遠東/亞泥)｜台南廠｜南區營運', relations:null },
+      { name:'亞東預拌混凝土（新營廠）', addr:'台南市新營區八德路3號', lat:23.305, lng:120.317, group:'5star',
+        detail:'亞東預拌(遠東/亞泥)｜新營廠｜溪北營運', relations:null },
+      { name:'台灣水泥（高雄水泥製品廠善化分廠）', addr:'台南市善化區興農路33號', lat:23.130, lng:120.300, group:'5star',
+        detail:'台泥(1101)｜善化分廠｜GRMC認證#097｜180m³/h', relations:null },
+      { name:'環球水泥（台南預拌混凝土場）', addr:'台南市南區中華西路一段59號', lat:22.977, lng:120.178, group:'4star',
+        detail:'環球水泥(環泥)子公司｜台南廠', relations:null },
+      { name:'名人預拌混凝土', addr:'台南市新市區中山路183號', lat:23.073, lng:120.297, group:'3star',
+        detail:'1995年｜GRMC認證｜全品項綠建材｜遠雄/中鼎/寶佳合作', relations:null },
+      { name:'太固實業', addr:'台南市仁德區義林路70號', lat:22.970, lng:120.253, group:'3star',
+        detail:'仁德廠｜供應大台南地區', relations:null },
+      { name:'竑榮實業', addr:'台南市官田區二鎮里工業南路20號', lat:23.180, lng:120.322, group:'3star',
+        detail:'官田工業區｜預拌混凝土+水泥製品', relations:null },
+      { name:'豐旗實業', addr:'台南市麻豆區麻豆口10之2號', lat:23.184, lng:120.254, group:'2star',
+        detail:'麻豆廠｜供應台南溪北地區', relations:null }
+    ]
   },
   kaohsiung: {
     label:'高雄', center:[22.65,120.35], zoom:10,
-    markers:[{ name:'📌 資料收集中', addr:'高雄地區', lat:22.65, lng:120.35, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+    markers:[
+      { name:'國產建材實業（仁武廠）', addr:'高雄市仁武區竹後里竹工三巷59號', lat:22.695, lng:120.349, group:'5star',
+        detail:'國產建材(2504)｜仁武廠', relations:null },
+      { name:'國產建材實業（鳳山廠）', addr:'高雄市大寮區江山里江山路81號', lat:22.604, lng:120.391, group:'5star',
+        detail:'國產建材(2504)｜鳳山廠｜負責人潘建男', relations:null },
+      { name:'亞東預拌混凝土（高雄廠）', addr:'高雄市大寮區永芳里萬丹路372號', lat:22.597, lng:120.396, group:'5star',
+        detail:'亞東預拌(遠東/亞泥)｜高雄廠｜高屏區營運處', relations:null },
+      { name:'亞東預拌混凝土（大順廠）', addr:'高雄市三民區民族一路556巷99號', lat:22.652, lng:120.308, group:'5star',
+        detail:'亞東預拌(遠東/亞泥)｜大順廠', relations:null },
+      { name:'台灣水泥（高雄水泥製品廠）', addr:'高雄市仁武區工業一路16號', lat:22.695, lng:120.352, group:'5star',
+        detail:'台泥(1101)｜仁武廠｜GRMC認證#011｜楠梓分廠另含2套拌合設備2500m³/日', relations:null },
+      { name:'環球水泥（鳳山預拌混凝土場）', addr:'高雄市大寮區中庄里鳳屏一路146號', lat:22.613, lng:120.396, group:'4star',
+        detail:'環球水泥(環泥)子公司｜鳳山廠', relations:null },
+      { name:'鳳勝實業（仁武廠/總公司）', addr:'高雄市仁武區鳳仁路294號', lat:22.692, lng:120.350, group:'4star',
+        detail:'鳳勝實業｜資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠', relations:null }
+    ]
   },
   pingtung: {
     label:'屏東', center:[22.55,120.55], zoom:10,
-    markers:[{ name:'📌 資料收集中', addr:'屏東地區', lat:22.55, lng:120.55, group:'1star', detail:'此區域業者資料尚在調查中', relations:null }]
+    markers:[
+      { name:'鳳勝實業（屏東廠）', addr:'屏東縣屏東市橋南里工業五路8號', lat:22.656, lng:120.510, group:'4star',
+        detail:'鳳勝實業｜屏東廠｜供應屏東市區', relations:null },
+      { name:'鳳勝實業（高樹廠）', addr:'屏東縣高樹鄉新南村興店路2號', lat:22.785, lng:120.598, group:'3star',
+        detail:'鳳勝實業｜高樹廠｜屏東北區供應', relations:null },
+      { name:'鳳勝實業（佳冬廠）', addr:'屏東縣枋寮鄉東海村研發路85號', lat:22.365, lng:120.588, group:'2star',
+        detail:'鳳勝實業｜佳冬廠(枋寮)｜屏東南區/墾丁半島供應', relations:null },
+      { name:'鳳勝實業（恆春廠）', addr:'屏東縣車城鄉福興村中山路1號', lat:22.080, lng:120.713, group:'1star',
+        detail:'鳳勝實業｜恆春廠｜墾丁/恆春半島供應', relations:null }
+    ]
   },
   taitung: {
     label:'台東', center:[22.75,121.10], zoom:10,
