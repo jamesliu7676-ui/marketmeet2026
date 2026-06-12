@@ -1,0 +1,104 @@
+{
+  "gcm_lk": {
+    "name": "國產建材實業（林口廠）",
+    "addr": "No. 17, Wenming Rd, Guishan District, Taoyuan City, Taiwan",
+    "lat": 25.0624657,
+    "lng": 121.3768616
+  },
+  "gcm_lz2": {
+    "name": "國產建材實業（蘆竹二廠）",
+    "addr": "No. 277-10, Changxing Rd Sec 3, Luzhu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "yat_ty": {
+    "name": "亞東預拌混凝土（桃園廠）",
+    "addr": "No. 42, Xinglong St, Luzhu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "yat_bd": {
+    "name": "亞東預拌混凝土（八德廠）",
+    "addr": "No. 369, Lane 2350, Xingfeng Rd, Bade District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "yat_xw": {
+    "name": "亞東預拌混凝土（新屋廠）",
+    "addr": "No. 210, Dingzhong Rd, Xinwu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "yat_lk": {
+    "name": "亞東預拌混凝土（林口廠）",
+    "addr": "No. 28, Dinghu, Guishan District, Taoyuan City, Taiwan",
+    "lat": 25.045329,
+    "lng": 121.356307
+  },
+  "tcc_gs": {
+    "name": "台灣水泥（龜山分廠）",
+    "addr": "No. 688, Dongwanshou Rd, Guishan District, Taoyuan City, Taiwan",
+    "lat": 25.0143535,
+    "lng": 121.3925936
+  },
+  "tcc_ty2": {
+    "name": "台灣水泥（桃園二廠）",
+    "addr": "No. 59, Liufu Rd, Luzhu District, Taoyuan City, Taiwan",
+    "lat": 25.0615695,
+    "lng": 121.2955674
+  },
+  "tcc_ty": {
+    "name": "台灣水泥（桃園分廠）",
+    "addr": "No. 220, Nanshan Rd Sec 2, Luzhu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "sunsan": {
+    "name": "新三亞預拌混凝土廠",
+    "addr": "No. 81, Longyuan Rd, Longtan District, Taoyuan City, Taiwan",
+    "lat": 24.8639321,
+    "lng": 121.2099045
+  },
+  "cinglng": {
+    "name": "慶龍預拌混凝土",
+    "addr": "No. 2, Lane Ziqiang, Neixi Rd, Luzhu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "gopu": {
+    "name": "國普混凝土工業",
+    "addr": "No. 42, Xinglong St, Luzhu District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "kuoshun_lh": {
+    "name": "國順預拌混凝土（龍華廠）",
+    "addr": "No. 40, Lane 32, Longxiao St, Guishan District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "dayuan": {
+    "name": "大園預拌混凝土",
+    "addr": "No. 427, Houguan 1st Rd, Dayuan District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "cinglng2": {
+    "name": "慶隆預拌混凝土",
+    "addr": "No. 331, Puzhong Rd, Zhongli District, Taoyuan City, Taiwan",
+    "lat": 24.9622563,
+    "lng": 121.2446157
+  },
+  "wuxiong": {
+    "name": "武雄實業（觀音廠）",
+    "addr": "No. 645, Zhongxiao Rd, Guanyin District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  },
+  "cinghwang": {
+    "name": "慶皇水泥",
+    "addr": "No. 228, Baoxing Rd Sec 1, Guanyin District, Taoyuan City, Taiwan",
+    "lat": null,
+    "lng": null
+  }
+}
