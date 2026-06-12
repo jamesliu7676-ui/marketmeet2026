@@ -1,0 +1,122 @@
+[
+  {
+    "id": "shifang",
+    "name": "世芳預拌混凝土有限公司",
+    "addr": "新北市樹林區中正路205號",
+    "region": "taipei",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "toufen",
+    "name": "頭份混凝土有限公司",
+    "addr": "苗栗縣苗栗市文聖里文山231之2號",
+    "region": "hsinchu",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "minfeng",
+    "name": "民峰實業梧棲預拌混凝土廠",
+    "addr": "台中市梧棲區臨港路二段210號",
+    "region": "taichung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "yema",
+    "name": "野馬預拌混凝土有限公司",
+    "addr": "台中市龍井區臨港路一段880巷18號",
+    "region": "taichung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "puyan",
+    "name": "埔塩預拌混凝土埔鹽廠",
+    "addr": "彰化縣埔鹽鄉埔港路63-4號",
+    "region": "taichung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "youjun",
+    "name": "有駿預拌混凝土股份有限公司",
+    "addr": "彰化縣埤頭鄉彰水路四段468巷10號",
+    "region": "taichung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "shengji",
+    "name": "盛記預拌混凝土有限公司",
+    "addr": "雲林縣斗六市石寮路2之12號",
+    "region": "yunlin",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "dingding",
+    "name": "丁丁有限公司預拌混凝土廠",
+    "addr": "台南市玉井區工業街266號",
+    "region": "tainan",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "anzhu",
+    "name": "安筑混凝土有限公司",
+    "addr": "台南市新營區嘉芳里八德路三號",
+    "region": "tainan",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "yunana",
+    "name": "玉楠混凝土楠西廠",
+    "addr": "台南市楠西區鹿田里鹿陶洋1號",
+    "region": "tainan",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "gaoping",
+    "name": "高屏預拌混凝土有限公司",
+    "addr": "高雄市美濃區自強街一段630號",
+    "region": "kaohsiung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "chengfeng",
+    "name": "城夆預拌混凝土九如廠",
+    "addr": "屏東縣九如鄉九如路二段1巷2號",
+    "region": "pingtung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "chaoqun",
+    "name": "超群混凝土內埔廠",
+    "addr": "屏東縣內埔鄉豐田村建富路7號",
+    "region": "pingtung",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "yusheng",
+    "name": "禹盛混凝土有限公司",
+    "addr": "宜蘭縣三星鄉月眉村星中路157號",
+    "region": "yilan",
+    "lat": null,
+    "lng": null
+  },
+  {
+    "id": "meizhou",
+    "name": "梅洲混凝土工業股份有限公司",
+    "addr": "宜蘭縣宜蘭市梅洲二路57號",
+    "region": "yilan",
+    "lat": null,
+    "lng": null
+  }
+]

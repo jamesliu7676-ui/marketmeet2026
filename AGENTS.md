@@ -34,12 +34,16 @@
 - **台東地區 10 處標點上線**：佛育企業、本上企業、延昌混凝土、陽宸企業、瑞晟砂石、志昇預拌混凝土（關山）、鹿原砂石場（鹿野）、久明企業（大武）、綠寶實業、尚聖營造（綠島）
 - **亞東預拌全台據點補完**：新增 8 廠（大里、烏日、潭子、霧峰、永康、仁德、小港、仁武），總計 22 處標示
 - **全台 11 區域共 160 處標點全部完成**（無遺漏區域）
+- **TRMC 公會會員名錄 421 家交叉比對完成**：以 playwright 爬取全部 22 頁會員資料（含地址），篩出 15 家預拌混凝土業者未列於地圖，已補入全台地圖
+- TRMC 補入業者（15 家）：世芳預拌混凝土（樹林）、頭份混凝土（苗栗）、民峰實業梧棲廠（梧棲）、野馬預拌混凝土（龍井）、埔塩預拌混凝土（埔鹽）、有駿預拌混凝土（埤頭）、盛記預拌混凝土（斗六）、丁丁預拌混凝土（玉井）、安筑混凝土（新營）、玉楠混凝土楠西廠（楠西）、高屏預拌混凝土（美濃）、城夆預拌混凝土九如廠（九如）、超群混凝土內埔廠（內埔）、禹盛混凝土（三星）、梅洲混凝土（宜蘭市）
+- 全台地圖現有 **175 處標點**（含 15 家 TRMC 補入）
 
 ### In Progress
-- 各區域市場態勢比較表與競爭力簡報準備
+- 確認 GitHub Pages 部署後新 15 處標點正常顯示
+- 各區域市場態勢比較表與競爭力簡報準備（全台 11 區資料皆已就緒）
 
 ### Blocked
-- (none)
+- TRMC 會員名錄爬取方式：GET 分頁 `member.asp?page=N` 可直接擷取，無需表單 submit
 
 ## Key Decisions
 - 董監事關係圖譜只顯示三星（含）以下業者，五星（亞東、台泥）及四星（鳳勝）不顯示
@@ -54,7 +58,7 @@
 - 地圖經緯度更新需用 Node.js (`fs.readFileSync/writeFileSync` with 'utf8')，禁用 PowerShell `[System.IO.File]::WriteAllText` 以避免 UTF-8 編碼損毀
 
 ## Next Steps
-- 確認 GitHub Pages 部署後台東 10 處標點正常顯示
+- 確認 GitHub Pages 部署後台東 10 處 + TRMC 15 處新增標點正常顯示
 - 建立各區域市場態勢比較表與競爭力簡報（全台 11 區資料皆已就緒）
 
 ## Critical Context
@@ -73,7 +77,7 @@
 - `D:\James-opencode\marketmeet2026\output\花蓮預拌混凝土廠地圖.html`: 花蓮 18 廠 Leaflet 地圖
 - `D:\James-opencode\marketmeet2026\output\宜蘭競爭力簡報.html`: 宜蘭 9 頁互動簡報
 - `D:\James-opencode\marketmeet2026\output\宜蘭預拌混凝土廠地圖.html`: 宜蘭 12 處標點地圖
-- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（160 處標點全區完整、NLSC 圖磚、董監事圖譜）
+- `D:\James-opencode\marketmeet2026\output\全台預拌混凝土廠地圖.html`: 全台 11 區域選單地圖（175 處標點全區完整、NLSC 圖磚、董監事圖譜）
 - `D:\James-opencode\marketmeet2026\data\花蓮北區業者.csv`: 花蓮北區 11 家
 - `D:\James-opencode\marketmeet2026\data\花蓮中南區業者.csv`: 花蓮中南區 9 家（含 3 家停業）
 - `D:\James-opencode\marketmeet2026\data\宜蘭地區業者.csv`: 宜蘭 8 家
