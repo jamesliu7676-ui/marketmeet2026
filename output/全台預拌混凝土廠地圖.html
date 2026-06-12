@@ -786,7 +786,7 @@ legend.onAdd = function() {
       });
     });
   }
-  const sorted = Object.entries(counts).filter(([,v])=>v>=2).sort((a,b)=>b[1]-a[1]);
+  const sorted = Object.entries(counts).filter(e=>e[1]>=2).sort((a,b)=>b[1]-a[1]);
 
   let html = '<h4>全國性預拌混凝土公司</h4>';
   sorted.forEach(([name, count]) => {
