@@ -34,6 +34,11 @@ body { font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif; overflow:hidd
 .legend i { width:14px; height:14px; display:inline-block; border-radius:50%; margin-right:4px; vertical-align:middle; }
 .legend .row { display:flex; align-items:center; gap:4px; margin-bottom:2px; }
 .legend .reg-count { font-size:11px; color:#888; margin-top:4px; }
+.legend .factory-list { max-height:280px; overflow-y:auto; margin-top:4px; }
+.legend .factory-list .row { padding:1px 0; }
+.legend .factory-list .row span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
+.legend .legend-toggle { font-size:11px; color:#1565c0; cursor:pointer; margin-top:4px; }
+.legend .legend-toggle:hover { text-decoration:underline; }
 .popup-content { font-size:13px; line-height:1.5; }
 .popup-content .name { font-weight:700; font-size:14px; color:#1a3a5c; }
 .popup-content .detail { color:#555; margin-top:2px; }
@@ -789,45 +794,40 @@ function loadRegion(regionKey) {
   } else {
     map.setView(data.center, data.zoom);
   }
+
+  updateLegend(regionKey);
 }
 
 // ====== NATIONAL COMPANY STATISTICS ======
 const legend = L.control({position:'bottomright'});
-legend.onAdd = function() {
-  const div = L.DomUtil.create('div','legend');
-
-  // Count plants per national company from marker data
-  function companyGroup(name) {
-    const n = name.replace(/[（(].*?[）)]/g,'').trim();
-    if (n.startsWith('國產建材')) return '國產建材實業';
-    if (n.startsWith('亞東預拌')) return '亞東預拌混凝土';
-    if (n.includes('台泥')||n.includes('台灣水泥')||n.includes('臺灣水泥')) return '台灣水泥';
-    if (n.startsWith('鳳勝')) return '鳳勝實業';
-    if (n.startsWith('環球')) return '環球水泥';
-    if (n.startsWith('力泰')) return '力泰建設企業';
-    if (n.startsWith('幸孚')) return '幸孚預拌混凝土';
-    if (n.startsWith('和昌')) return '和昌國際工業';
-    if (n.startsWith('興威')) return '興威股份有限公司';
-    if (n.startsWith('國順')) return '國順預拌混凝土';
-    if (n.startsWith('毅和')) return '毅和實業';
-    if (n.startsWith('宜興')) return '宜興預拌混凝土';
-    if (n.startsWith('竑榮')) return '竑榮實業';
-    if (n.startsWith('潤泰')) return '潤泰集團';
-    if (n.startsWith('亞興')) return '亞興水泥製品';
-    return null;
-  }
-  // Count from regions data
+function companyGroup(name) {
+  const n = name.replace(/[（(].*?[）)]/g,'').trim();
+  if (n.startsWith('國產建材')) return '國產建材實業';
+  if (n.startsWith('亞東預拌')) return '亞東預拌混凝土';
+  if (n.includes('台泥')||n.includes('台灣水泥')||n.includes('臺灣水泥')) return '台灣水泥';
+  if (n.startsWith('鳳勝')) return '鳳勝實業';
+  if (n.startsWith('環球')) return '環球水泥';
+  if (n.startsWith('力泰')) return '力泰建設企業';
+  if (n.startsWith('幸孚')) return '幸孚預拌混凝土';
+  if (n.startsWith('和昌')) return '和昌國際工業';
+  if (n.startsWith('興威')) return '興威股份有限公司';
+  if (n.startsWith('國順')) return '國順預拌混凝土';
+  if (n.startsWith('毅和')) return '毅和實業';
+  if (n.startsWith('宜興')) return '宜興預拌混凝土';
+  if (n.startsWith('竑榮')) return '竑榮實業';
+  if (n.startsWith('潤泰')) return '潤泰集團';
+  if (n.startsWith('亞興')) return '亞興水泥製品';
+  return null;
+}
+function buildNationalStatsHtml() {
   const counts = {};
-  if (typeof regions !== 'undefined') {
-    Object.values(regions).forEach(r => {
-      (r.markers||[]).forEach(m => {
-        const g = companyGroup(m.name);
-        if (g) counts[g] = (counts[g]||0)+1;
-      });
+  Object.values(regions).forEach(r => {
+    (r.markers||[]).forEach(m => {
+      const g = companyGroup(m.name);
+      if (g) counts[g] = (counts[g]||0)+1;
     });
-  }
+  });
   const sorted = Object.entries(counts).filter(e=>e[1]>=2).sort((a,b)=>b[1]-a[1]);
-
   let html = '<h4>全國性預拌混凝土公司</h4>';
   sorted.forEach(([name, count]) => {
     html += '<div class="row" style="justify-content:space-between">';
@@ -835,8 +835,39 @@ legend.onAdd = function() {
     html += '<span style="font-weight:700;color:#1a3a5c">' + count + '廠</span>';
     html += '</div>';
   });
+  return html;
+}
+function buildRegionFactoryHtml(regionKey) {
+  const r = regions[regionKey];
+  if (!r) return '';
+  let html = '<h4>' + r.label + ' · ' + r.markers.length + ' 家</h4>';
+  html += '<div class="factory-list">';
+  r.markers.forEach(m => {
+    html += '<div class="row">';
+    html += '<i style="background:' + (colors[m.group]||'#95a5a6') + '"></i>';
+    html += '<span>' + m.name + '</span>';
+    html += '</div>';
+  });
+  html += '</div>';
+  return html;
+}
+function updateLegend(regionKey) {
+  const div = document.querySelector('.legend');
+  if (!div) return;
+  let html = '';
+  if (regionKey === 'all') {
+    html = buildNationalStatsHtml();
+  } else {
+    html = buildRegionFactoryHtml(regionKey);
+    html += '<hr style="margin:6px 0">';
+    html += '<div class="legend-toggle" onclick="document.getElementById(\'regionSelect\').value=\'all\';document.getElementById(\'regionSelect\').dispatchEvent(new Event(\'change\'));">📊 查看全國統計</div>';
+  }
   html += '<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>';
   div.innerHTML = html;
+}
+legend.onAdd = function() {
+  const div = L.DomUtil.create('div','legend');
+  div.innerHTML = '<div style="padding:4px;text-align:center;color:#999">載入中...</div>';
   return div;
 };
 
@@ -846,8 +877,8 @@ document.getElementById('regionSelect').addEventListener('change', function() {
   loadRegion(currentRegion);
 });
 
-loadRegion('all');
 legend.addTo(map);
+loadRegion('all');
 </script>
 </body>
 </html>
