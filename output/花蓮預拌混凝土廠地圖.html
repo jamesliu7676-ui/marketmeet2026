@@ -55,8 +55,45 @@ const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsC
   attribution:'國土測繪圖資服務雲', maxZoom: 18
 });
 nlsc.addTo(map);
-L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
 
+// === 公共工程招標案標點 ===
+const TENDER_DATA = [
+  { name:'光復鄉大全村社區農路設施改善工程', lat:23.6707, lng:121.4243, org:'農水署花蓮分署', amount:'272萬', status:'決標' },
+  { name:'豐濱鄉新社海堤康芮颱風災復建工程', lat:23.6519, lng:121.5356, org:'豐濱鄉公所', amount:'1,255萬', status:'決標' },
+  { name:'豐濱鄉立圖書館耐震補強工程', lat:23.5970, lng:121.5170, org:'豐濱鄉公所', amount:'249萬', status:'決標' },
+  { name:'花蓮縣消防局新秀分隊耐震補強', lat:24.0033, lng:121.6142, org:'花蓮縣消防局', amount:'295萬', status:'決標' },
+  { name:'馬太鞍溪堰塞湖臨時安置組合屋', lat:23.6420, lng:121.3980, org:'國土管理署', amount:'1,988萬', status:'決標' },
+  { name:'公路局花蓮工務段豐濱搶修工程(113)', lat:23.7465, lng:121.4437, org:'公路局東分局', amount:'3,330萬', status:'決標' },
+  { name:'花蓮縣全縣道路改善開口契約(110)', lat:23.9893, lng:121.6195, org:'花蓮縣政府', amount:'897萬', status:'決標' },
+  { name:'新城鄉全鄉土木工程及道路養護開口契約', lat:24.0033, lng:121.6142, org:'新城鄉公所', amount:'—', status:'決標' },
+  { name:'萬榮鄉明利村擋土牆0403震災復建工程', lat:23.7190, lng:121.4060, org:'萬榮鄉公所', amount:'—', status:'決標' },
+  { name:'玉里鎮瑪谷達璦多功能長壽俱樂部耐震補強', lat:23.3323, lng:121.3141, org:'玉里鎮公所', amount:'—', status:'決標' },
+  { name:'花蓮市災害搶修開口契約', lat:23.9893, lng:121.6195, org:'花蓮市公所', amount:'—', status:'招標中' },
+  { name:'壽豐鄉115年度公共工程小型工程(開口契約)', lat:23.8271, lng:121.5032, org:'壽豐鄉公所', amount:'—', status:'招標中' },
+  { name:'豐濱鄉114年度各村基礎設施二期工程', lat:23.5970, lng:121.5170, org:'豐濱鄉公所', amount:'—', status:'招標中' },
+  { name:'花蓮縣政府115年度北區道路改善工程第一標(開口)', lat:24.0500, lng:121.5800, org:'花蓮縣政府', amount:'—', status:'招標中' },
+  { name:'花蓮縣政府115年度全縣水利設施清疏工程(開口)', lat:23.9893, lng:121.6195, org:'花蓮縣政府', amount:'—', status:'招標中' }
+];
+
+const tenderLayer = L.layerGroup();
+
+TENDER_DATA.forEach(t => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:16px;height:16px;transform:rotate(45deg);background:#27ae60;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+    popupAnchor: [0, -12]
+  });
+  const marker = L.marker([t.lat, t.lng], { icon }).addTo(tenderLayer);
+  marker.bindTooltip(t.name, { direction: 'top', offset: [0, -8], opacity: 0.95 });
+  let popupHtml = `<div class="popup-content"><div class="name">${t.name}</div><div class="detail">機關：${t.org}</div><div class="detail">金額：${t.amount}</div><div class="detail" style="margin-top:4px;padding:2px 6px;border-radius:3px;display:inline-block;font-size:12px;background:${t.status==='決標'?'#e8f5e9':'#fff3e0'};color:${t.status==='決標'?'#2e7d32':'#e65100'}">${t.status}</div></div>`;
+  marker.bindPopup(popupHtml);
+});
+
+tenderLayer.addTo(map);
+
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, { '公共工程招標案': tenderLayer }, { position:'topleft' }).addTo(map);
 
 const markers = [
   // === 五星：全國性大廠 ===
@@ -223,14 +260,18 @@ legend.onAdd = function() {
   Object.keys(scaleLabels).forEach(k => {
     div.innerHTML += `<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
   });
-  div.innerHTML += `<hr style="margin:6px 0"><div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
+  div.innerHTML += `<hr style="margin:6px 0"><div class="row"><i style="background:#27ae60;border-radius:0;transform:rotate(45deg);width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px"></i> 公共工程招標案</div>`;
+  div.innerHTML += `<div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
   return div;
 };
 legend.addTo(map);
 
-// Fit bounds
-const group = L.featureGroup(markers.map(m => L.marker([m.lat, m.lng])));
-map.fitBounds(group.getBounds().pad(0.08));
+// Fit bounds (include tender markers)
+const allBounds = L.featureGroup([
+  ...markers.map(m => L.marker([m.lat, m.lng])),
+  ...TENDER_DATA.map(t => L.marker([t.lat, t.lng]))
+]);
+map.fitBounds(allBounds.getBounds().pad(0.08));
 </script>
 </body>
 </html>
