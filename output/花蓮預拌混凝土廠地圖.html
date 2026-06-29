@@ -93,7 +93,110 @@ TENDER_DATA.forEach(t => {
 
 tenderLayer.addTo(map);
 
-L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, { '公共工程招標案': tenderLayer }, { position:'topleft' }).addTo(map);
+// === 交通建設路線與站點 ===
+const TRANSPORT = L.layerGroup();
+
+const routeStyles = {
+  tun: { color: '#5D4037', weight: 5, opacity: 0.9 },
+  via: { color: '#00897B', weight: 3.5, opacity: 0.85, dashArray: '6,4' },
+  road: { color: '#e74c3c', weight: 3, opacity: 0.7, dashArray: '10,8' },
+  freeway5: { color: '#e67e22', weight: 3, opacity: 0.8, dashArray: '10,8' },
+  railway: { color: '#2980b9', weight: 4, opacity: 0.8 },
+  hualienEl: { color: '#8e44ad', weight: 3, opacity: 0.8, dashArray: '8,6' }
+};
+
+// 蘇花安 — 3段（細分隧道/高架/路堤）
+const suhuaSegments = [
+  // 東澳⇄南澳 (9.3km)
+  { name:'東澳1號隧道', pts:[[24.530,121.833],[24.508,121.818],[24.495,121.809]], style:'tun', detail:'隧道4.7km' },
+  { name:'東澳南澳段高架橋', pts:[[24.495,121.809],[24.480,121.804],[24.470,121.801]], style:'via', detail:'橋梁3.8km' },
+  { name:'東澳南澳段路堤', pts:[[24.470,121.801],[24.4646,121.7995]], style:'road', detail:'路堤0.8km' },
+  // 和平⇄和中 (5.5km)
+  { name:'和平和中段高架橋', pts:[[24.2954,121.7339],[24.285,121.728],[24.275,121.723],[24.270,121.719]], style:'via', detail:'全段高架橋4.8km' },
+  // 和仁⇄崇德 (15.1km)
+  { name:'中仁隧道', pts:[[24.195,121.671],[24.185,121.666],[24.178,121.660]], style:'tun', detail:'隧道段' },
+  { name:'大清水溪橋', pts:[[24.178,121.660],[24.172,121.658],[24.170,121.657]], style:'via', detail:'橋梁3.1km（含大清水溪等）' },
+  { name:'匯德隧道', pts:[[24.170,121.657],[24.164,121.654],[24.160,121.652]], style:'tun', detail:'隧道段（含通風橫坑）' },
+  { name:'和仁崇德段路堤', pts:[[24.160,121.652],[24.1563,121.6504]], style:'road', detail:'路堤1.8km→崇德/太魯閣大橋' },
+];
+
+suhuaSegments.forEach(s => {
+  L.polyline(s.pts, { ...routeStyles[s.style] }).addTo(TRANSPORT).bindPopup(`<div class="popup-content"><div class="name">${s.name}</div><div class="detail">${s.detail}</div><div class="detail" style="color:#e74c3c">🚧 蘇花安｜預計2032年全線通車｜總經費1,056億</div></div>`);
+});
+
+// 隧道洞口標示
+function createPortalIcon() {
+  return L.divIcon({ className: '', html: `<div style="width:10px;height:14px;background:#5D4037;border:2px solid #fff;border-radius:2px;box-shadow:0 1px 3px rgba(0,0,0,0.5);position:relative"><div style="position:absolute;top:3px;left:1px;width:6px;height:4px;background:#8D6E63;border-radius:2px 2px 0 0"></div></div>`, iconSize: [10,14], iconAnchor: [5,7], popupAnchor: [0,-10] });
+}
+[[24.530,121.833],[24.495,121.809],[24.195,121.671],[24.178,121.660],[24.170,121.657],[24.160,121.652]].forEach(p => {
+  L.marker(p, { icon: createPortalIcon() }).addTo(TRANSPORT).bindTooltip('隧道洞口', { direction:'top', offset:[0,-8], opacity:0.85 });
+});
+
+// 國5銜接蘇花改
+L.polyline([[24.620,121.814],[24.600,121.820],[24.575,121.828],[24.550,121.831],[24.530,121.833]], { ...routeStyles.freeway5 }).addTo(TRANSPORT).bindPopup(`<div class="popup-content"><div class="name">國5銜接蘇花改 (6.8km)</div><div class="detail">國5蘇澳交流道(54K)→東澳隧道北口｜隧道5座+橋梁7座｜基本設計已通過</div><div class="detail" style="color:#e67e22">🚧 預計2027/7動工→2032完工｜經費365.6億</div></div>`);
+
+// 花東鐵路雙軌電氣化
+const railwayRoute = [
+  [23.9939, 121.6009], // 花蓮
+  [23.980, 121.595],   // 中華路平交道附近
+  [23.970, 121.588],   // 建國路平交道附近
+  [23.9478, 121.5474], // 幹城
+  [23.920, 121.530],   // 木瓜溪
+  [23.8689, 121.5108], // 壽豐
+  [23.810, 121.480],   // 溪口
+  [23.740, 121.440],   // 鳳林
+  [23.669, 121.424],   // 光復
+  [23.600, 121.400],   // 富源
+  [23.496, 121.374],   // 瑞穗
+  [23.4244, 121.3462], // 三民
+  [23.3315, 121.3118], // 玉里
+  [23.269, 121.317],   // 東里
+  [23.200, 121.280],   // 富里
+  [23.1251, 121.2148], // 池上
+  [23.048, 121.166],   // 關山
+  [22.995, 121.140],   // 鹿野
+  [22.955, 121.120],   // 山里
+  [22.850, 121.130],   // 康樂
+  [22.7938, 121.1230], // 台東
+  [22.718, 121.065],   // 知本
+];
+L.polyline(railwayRoute, { ...routeStyles.railway }).addTo(TRANSPORT).bindPopup(`<div class="popup-content"><div class="name">花東鐵路雙軌電氣化 (162.5km)</div><div class="detail">進度42.53%｜總經費691億｜花蓮↔知本</div><div class="detail" style="color:#2980b9">第一階段台東-知本2027通車｜全線2031年完工</div></div>`);
+
+// 花蓮鐵路高架化（規劃中）
+L.polyline([[23.9939,121.6009],[23.980,121.595],[23.970,121.588],[23.960,121.580],[23.9478,121.5474],[23.9324,121.5389]], { ...routeStyles.hualienEl }).addTo(TRANSPORT).bindPopup(`<div class="popup-content"><div class="name">花蓮鐵路立體化（規劃中）(8.5km)</div><div class="detail">花蓮車站→木瓜溪堤防｜含7處平交道｜可行性評估修正中</div><div class="detail" style="color:#8e44ad">經費約265億｜地方配合款56.2億｜議會已發同意函</div></div>`);
+
+// 橋梁/車站標點
+function createTransportIcon(color, shape) {
+  if (shape === 'diamond') {
+    return L.divIcon({ className: '', html: `<div style="width:14px;height:14px;transform:rotate(45deg);background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`, iconSize: [14,14], iconAnchor: [7,7], popupAnchor: [0,-10] });
+  }
+  return L.divIcon({ className: '', html: `<div style="width:12px;height:12px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.5)"></div>`, iconSize: [12,12], iconAnchor: [6,6], popupAnchor: [0,-10] });
+}
+
+const transportMarkers = [
+  { name:'馬太鞍溪橋（重建中）', lat:23.6889, lng:121.3989, color:'#1abc9c', shape:'diamond', detail:'進度43.69%（超前5.2%）｜鋼便橋已通行｜目標2026底北上線單線通車' },
+  { name:'花蓮大橋（改建中）', lat:23.9770, lng:121.6060, color:'#1abc9c', shape:'diamond', detail:'南下新橋已通車｜舊橋拆除中｜預計2026年完工' },
+  { name:'池上大橋（改建中）', lat:23.1251, lng:121.2148, color:'#1abc9c', shape:'diamond', detail:'北上線新橋已通車｜南下線舊橋封閉改建中' },
+  { name:'花蓮車站', lat:23.9939, lng:121.6009, color:'#2980b9', shape:'dot', detail:'花東鐵路起點｜鐵路高架化起點' },
+  { name:'壽豐車站', lat:23.8689, lng:121.5108, color:'#2980b9', shape:'dot', detail:'花東鐵路雙軌段' },
+  { name:'光復車站', lat:23.669, lng:121.424, color:'#2980b9', shape:'dot', detail:'花東鐵路CB02標光復-瑞穗段施工中' },
+  { name:'瑞穗車站', lat:23.496, lng:121.374, color:'#2980b9', shape:'dot', detail:'瑞北高架橋(3654m)預力梁吊梁中' },
+  { name:'玉里車站', lat:23.3315, lng:121.3118, color:'#2980b9', shape:'dot', detail:'三民-玉里段施工中(2024/3開工)' },
+  { name:'關山車站', lat:23.048, lng:121.166, color:'#2980b9', shape:'dot', detail:'關山-山里段施工中(高架橋1779m)' },
+  { name:'台東車站', lat:22.7938, lng:121.1230, color:'#2980b9', shape:'dot', detail:'台東-知本段已切換軌道，目標2027通車' },
+  { name:'知本車站', lat:22.718, lng:121.065, color:'#2980b9', shape:'dot', detail:'花東鐵路雙軌終點' },
+];
+
+transportMarkers.forEach(m => {
+  const icon = createTransportIcon(m.color, m.shape);
+  const marker = L.marker([m.lat, m.lng], { icon }).addTo(TRANSPORT);
+  marker.bindTooltip(m.name, { direction:'top', offset:[0,-8], opacity:0.95 });
+  marker.bindPopup(`<div class="popup-content"><div class="name">${m.name}</div><div class="detail">${m.detail}</div></div>`);
+});
+
+TRANSPORT.addTo(map);
+
+L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, { '公共工程招標案': tenderLayer, '交通建設路線/站點': TRANSPORT }, { position:'topleft' }).addTo(map);
 
 const markers = [
   // === 五星：全國性大廠 ===
@@ -261,15 +364,26 @@ legend.onAdd = function() {
     div.innerHTML += `<div class="row"><i style="background:${colors[k]}"></i> ${scaleLabels[k]}</div>`;
   });
   div.innerHTML += `<hr style="margin:6px 0"><div class="row"><i style="background:#27ae60;border-radius:0;transform:rotate(45deg);width:12px;height:12px;display:inline-block;vertical-align:middle;margin-right:4px"></i> 公共工程招標案</div>`;
-  div.innerHTML += `<div style="font-size:12px;color:#888">🖱 懸浮顯示廠名 ｜ 點擊查看詳細</div>`;
+  div.innerHTML += `<hr style="margin:6px 0"><div style="font-weight:700;font-size:12px;margin-bottom:4px">交通建設（可切換）</div>`;
+  div.innerHTML += `<div style="font-weight:700;font-size:11px;margin:2px 0 1px 6px">蘇花安（規劃中）</div>`;
+  div.innerHTML += `<div class="row" style="margin-left:6px"><i style="background:#5D4037;width:18px;height:4px;border-radius:1px;display:inline-block;vertical-align:middle;margin-right:4px"></i> 隧道段</div>`;
+  div.innerHTML += `<div class="row" style="margin-left:6px"><i style="background:#00897B;width:18px;height:3px;border-radius:0;border-top:2px dashed #00897B;display:inline-block;vertical-align:middle;margin-right:4px"></i> 高架橋段</div>`;
+  div.innerHTML += `<div class="row" style="margin-left:6px"><i style="background:#e74c3c;width:18px;height:3px;border-radius:0;border-top:2px dashed #e74c3c;display:inline-block;vertical-align:middle;margin-right:4px"></i> 路堤段</div>`;
+  div.innerHTML += `<div class="row"><i style="background:#e67e22;width:18px;height:3px;border-radius:0;border-top:2px dashed #e67e22"></i> 國5銜接蘇花改</div>`;
+  div.innerHTML += `<div class="row"><i style="background:#2980b9;width:18px;height:3px;border-radius:0;border-top:2px solid #2980b9"></i> 花東鐵路雙軌</div>`;
+  div.innerHTML += `<div class="row"><i style="background:#8e44ad;width:18px;height:3px;border-radius:0;border-top:2px dashed #8e44ad"></i> 花蓮鐵路高架化（規劃）</div>`;
+  div.innerHTML += `<div class="row"><i style="background:#1abc9c;border-radius:0;transform:rotate(45deg);width:10px;height:10px;display:inline-block;vertical-align:middle;margin-right:4px"></i> 橋梁改建</div>`;
+  div.innerHTML += `<div class="row"><i style="background:#2980b9;width:10px;height:10px;border-radius:50%;display:inline-block;vertical-align:middle;margin-right:4px"></i> 鐵路車站</div>`;
+  div.innerHTML += `<div style="font-size:12px;color:#888">🖱 懸浮顯示名稱 ｜ 點擊查看詳細</div>`;
   return div;
 };
 legend.addTo(map);
 
-// Fit bounds (include tender markers)
+// Fit bounds (include all layers)
 const allBounds = L.featureGroup([
   ...markers.map(m => L.marker([m.lat, m.lng])),
-  ...TENDER_DATA.map(t => L.marker([t.lat, t.lng]))
+  ...TENDER_DATA.map(t => L.marker([t.lat, t.lng])),
+  ...transportMarkers.map(m => L.marker([m.lat, m.lng]))
 ]);
 map.fitBounds(allBounds.getBounds().pad(0.08));
 </script>

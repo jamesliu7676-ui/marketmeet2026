@@ -42,9 +42,11 @@
 - **全國性公司廠數核對與補入**：比對 TRMC 會員資料發現多數公司缺漏，已補入 34 廠（鳳勝+6、國產+6、台泥+7、環球+6、和昌+2、宜興+1、幸孚+1、毅和+1、興威+1、竑榮+3），總計 **209 處標點**
 - **GitHub Pages 部署確認**：地圖 0 console error，下拉選單 11 區域 + 全台概覽正常運作，圖例與圖磚正確顯示
 - **`Unexpected token '{'` 除錯完成**：根因為 GitHub Pages 快取未重建，持續服務舊版（缺少逗號）。經 push 觸發重建後恢復正常
+- **花蓮公共工程招標調查**：15 案經緯度定位，已加入花蓮地圖（綠色菱形、可切換圖層），資料匯出 CSV
+- **花東交通建設路線標示**：蘇花安(3段)、國5銜接蘇花改、花東鐵路雙軌、花蓮鐵路高架化（規劃）、馬太鞍溪橋/花蓮大橋/池上大橋改建，共 11 站點+路線 Polyline，已加入花蓮地圖（可切換圖層）
 
 ### In Progress
-- (none — 地圖已穩定)
+- (none)
 
 ### Blocked
 - (none)
@@ -63,6 +65,7 @@
 
 ## Next Steps
 - 建立各區域市場態勢比較表與競爭力簡報（全台 11 區資料皆已就緒）
+- 花蓮大型專案混凝土預估量調查與地圖標示（使用者提供建案名單後進行）
 
 ## Critical Context
 - 地圖用 Leaflet.js，使用 NLSC（國土測繪圖資服務雲）為預設圖磚，OSM 為備選
@@ -86,6 +89,7 @@
 - `D:\James-opencode\marketmeet2026\data\宜蘭地區業者.csv`: 宜蘭 8 家
 - `D:\James-opencode\marketmeet2026\data\北區業者.csv`: 北區 33 家
 - `D:\James-opencode\marketmeet2026\data\花蓮地區業者一覽.md`: 綜合報告（含花蓮、宜蘭、北區章節）
+- `D:\James-opencode\marketmeet2026\data\花蓮公共工程招標案.csv`: 花蓮 15 案公共工程招標經緯度列表
 - `D:\James-opencode\marketmeet2026\scripts\update_coords.js`: Node.js 座標批次更新腳本
 - `D:\James-opencode\marketmeet2026\scripts\apply_nlsc.js`: NLSC 圖磚切換腳本
 - `D:\James-opencode\marketmeet2026\AGENTS.md`: 專案設定
