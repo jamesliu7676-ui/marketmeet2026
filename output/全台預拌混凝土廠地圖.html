@@ -34,7 +34,7 @@ body { font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif; overflow:hidd
 .legend i { width:14px; height:14px; display:inline-block; border-radius:50%; margin-right:4px; vertical-align:middle; }
 .legend .row { display:flex; align-items:center; gap:4px; margin-bottom:2px; }
 .legend .reg-count { font-size:11px; color:#888; margin-top:4px; }
-.legend .factory-list { max-height:280px; overflow-y:auto; margin-top:4px; }
+.legend .factory-list { max-height:200px; overflow-y:auto; margin-top:4px; }
 .legend .factory-list .row { padding:1px 0; }
 .legend .factory-list .row span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:12px; }
 .legend .legend-toggle { font-size:11px; color:#1565c0; cursor:pointer; margin-top:4px; }
@@ -840,7 +840,24 @@ function buildNationalStatsHtml() {
 function buildRegionFactoryHtml(regionKey) {
   const r = regions[regionKey];
   if (!r) return '';
+  // Regional national-company stats
+  const counts = {};
+  r.markers.forEach(m => {
+    const g = companyGroup(m.name);
+    if (g) counts[g] = (counts[g]||0) + 1;
+  });
+  const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
   let html = '<h4>' + r.label + ' · ' + r.markers.length + ' 家</h4>';
+  if (sorted.length) {
+    html += '<div style="margin-bottom:6px;padding:6px;background:#f5f8fc;border-radius:4px">';
+    sorted.forEach(([name, count]) => {
+      html += '<div class="row" style="justify-content:space-between;font-size:12px">';
+      html += '<span>' + name + '</span>';
+      html += '<span style="font-weight:600;color:#1a3a5c">' + count + '廠</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
   html += '<div class="factory-list">';
   r.markers.forEach(m => {
     html += '<div class="row">';
