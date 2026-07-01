@@ -44,6 +44,14 @@
 - **`Unexpected token '{'` 除錯完成**：根因為 GitHub Pages 快取未重建，持續服務舊版（缺少逗號）。經 push 觸發重建後恢復正常
 - **花蓮公共工程招標調查**：15 案經緯度定位，已加入花蓮地圖（綠色菱形、可切換圖層），資料匯出 CSV
 - **花東交通建設路線標示**：蘇花安(3段)、國5銜接蘇花改、花東鐵路雙軌、花蓮鐵路高架化（規劃）、馬太鞍溪橋/花蓮大橋/池上大橋改建，共 11 站點+路線 Polyline，已加入花蓮地圖（可切換圖層）
+- **雲林·嘉義·南投董監事關係圖譜補完**：13 家業者（泉溢、承慶、煜昌、德欣先進、益昌砂石、義展、宏益達、宏進、天源、任建、源順、聯成、盛記）董監事資料以 findcompany.com.tw 完成調查，relations 已套入全台地圖（11 家有資料、天源廢止/源順行號保留 null）
+- **新竹苗栗董監事圖譜補入**：7 處標點（永協企業、毅和實業2廠、錦鋒混凝土、協鑫混凝土、福宏實業、頭份混凝土）
+- **台中·彰化董監事圖譜補入**：15 家業者（廣達、中來、長生、福鹿、久連、裕山、全富、佳生砂石、伸太田、豐崗、甲東洋土、民峰實業、野馬、埔塩、有駿）
+- **台南董監事圖譜補入**：7 家業者（名人預拌、太固實業、竑榮實業、豐旗實業、丁丁、安筑混凝土、玉楠混凝土）
+- **高雄董監事圖譜補入**：1 家（高屏預拌混凝土）
+- **屏東董監事圖譜補入**：2 家（城夆預拌、超群混凝土）
+- **台東董監事圖譜補入**：10 家（佛育企業、本上企業、延昌混凝土、陽宸企業、瑞晟砂石、志昇預拌、鹿原砂石場、久明企業、綠寶實業、尚聖營造）
+- **全台董監事圖譜完工**：雲嘉南投（11家）→台南(7)→高雄(1)→屏東(2)→台東(10)→新竹苗栗(6家)→台中彰化(15家)，合計 7 區域均已注入 relations 資料
 
 ### In Progress
 - (none)
@@ -68,15 +76,17 @@
 - 花蓮大型專案混凝土預估量調查與地圖標示（使用者提供建案名單後進行）
 
 ## Critical Context
+- 全台董監事圖譜完成度：花蓮 ✅ 宜蘭 ✅ 北區 ✅ 桃園(partial) ✅ 新竹苗栗 ✅ 台中彰化 ✅ 雲嘉南投(11/13) ✅ 台南 ✅ 高雄 ✅ 屏東 ✅ 台東 ✅
 - 地圖用 Leaflet.js，使用 NLSC（國土測繪圖資服務雲）為預設圖磚，OSM 為備選
 - NLSC tiles URL: `https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}`
-- 所有 PowerShell `[System.IO.File]::WriteAllText` 操作曾造成 UTF-8 中文損毀，已全面改用 Node.js fs 模組
+- 所有 PowerShell 操作曾造成 UTF-8 中文損毀，已全面改用 Node.js fs 模組
 - GitHub Pages 公開網址：https://jamesliu7676-ui.github.io/marketmeet2026/output/全台預拌混凝土廠地圖.html
 - 友正集團關係圖：方來興→友誠、友砂、友正貨運、友華加油站；陳東堯→花建實業、友正預拌（監察人）；馮志緯→友正預拌（董事長）
 - 宜興集團關係圖：李興和（董事長）→武雄實業、梅洲混凝土、藍園營造、蘇澳石礦；林贊壽（董事）→梅洲混凝土（董事長）、靖瑋營造、蘇澳石礦（負責人）
 - 得福/福得連家網絡：連志峯（得福董事長/福得董事）、吳智翔（福得董事長/得福董事）、薛豐文（得福監察人/福得董事）
 - 北區龍頭：國產建材（2504）7 廠、亞東預拌（遠東/亞泥）2 廠、台泥 1 廠、力泰建設（5520）2 廠、幸孚（幸福水泥）5 廠、和昌國際工業（4.85億）2 廠、龍形企業（8,000萬）八里廠
 - 台東最大在地廠：志昇預拌混凝土（關山順興路）、本上企業（中興路四段30餘年）
+- 董監事資料來源：台灣公司網 (twincn.com)、商工查詢 (findbiz.nat.gov.tw)、EZ公司查詢 (twcompanys.com)
 
 ## Relevant Files
 - `D:\James-opencode\marketmeet2026\output\花蓮競爭力簡報.html`: 9 頁互動簡報，GitHub Pages 公開
@@ -90,7 +100,9 @@
 - `D:\James-opencode\marketmeet2026\data\北區業者.csv`: 北區 33 家
 - `D:\James-opencode\marketmeet2026\data\花蓮地區業者一覽.md`: 綜合報告（含花蓮、宜蘭、北區章節）
 - `D:\James-opencode\marketmeet2026\data\花蓮公共工程招標案.csv`: 花蓮 15 案公共工程招標經緯度列表
+- `D:\James-opencode\marketmeet2026\data\trmc_all_members.txt`: TRMC 公會 421 家會員完整名錄與地址
 - `D:\James-opencode\marketmeet2026\scripts\update_coords.js`: Node.js 座標批次更新腳本
 - `D:\James-opencode\marketmeet2026\scripts\apply_nlsc.js`: NLSC 圖磚切換腳本
+- `D:\James-opencode\marketmeet2026\scripts\inject_all_missing.js`: 董監事圖譜全域一次性注入腳本
 - `D:\James-opencode\marketmeet2026\AGENTS.md`: 專案設定
 - `D:\James-opencode\marketmeet2026\專案\marketmeet2026-工作筆記.md`: Obsidian 工作筆記
