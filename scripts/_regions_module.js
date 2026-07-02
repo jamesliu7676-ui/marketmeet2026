@@ -470,8 +470,6 @@ module.exports = {
         detail:'亞東預拌(遠東/亞泥)｜嘉南區營運處｜永康廠', relations:null },
       { name:'亞東預拌混凝土（仁德廠）', addr:'台南市仁德區義林路70號', lat:22.9632, lng:120.2627, group:'5star',
         detail:'亞東預拌(遠東/亞泥)｜嘉南區營運處｜仁德廠（原太固實業廠址）', relations:null },
-      { name:'亞東預拌混凝土（新營廠）', addr:'台南市新營區八德路3號', lat:23.305, lng:120.317, group:'5star',
-        detail:'亞東預拌(遠東/亞泥)｜新營廠｜溪北營運', relations:null },
       { name:'台灣水泥（高雄水泥製品廠善化分廠）', addr:'台南市善化區興農路33號', lat:23.130, lng:120.300, group:'5star',
         detail:'台泥(1101)｜善化分廠｜GRMC認證#097｜180m³/h', relations:null },
       { name:'環球水泥（台南預拌混凝土場）', addr:'台南市南區中華西路一段59號', lat:22.977, lng:120.178, group:'4star',
@@ -587,4 +585,4 @@ module.exports = {
         detail:'丙等營造｜預拌混凝土製造｜綠島在地供應｜負責人張宏彬', relations:{me:'尚聖營造', members:[{name:'鄭蘇照蘭',role:'董事',companies:['尚聖營造']}]} }
     ]
   }
-};
+};;
