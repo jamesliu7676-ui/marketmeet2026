@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>全台 — 預拌混凝土廠競爭力比較</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root { --bg:#0a0e27; --bg-2:#11163a; --bg-3:#1a2050; --ink:#eef3ff; --ink-2:#b8c5e0; --ink-3:#7a8bb8; --accent:#00d4ff; --accent-2:#ff006e; --accent-3:#7b61ff; --t1:50px; --t2:32px; --t3:20px; --t4:14px; --s1:72px; --s2:42px; --s3:22px; --s4:11px; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans TC',sans-serif; background:var(--bg); color:var(--ink); overflow:hidden; height:100vh; }
+#progress { position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); width:0%; z-index:100; transition:width .45s ease; }
+#section-tag { position:fixed; top:14px; right:24px; font-size:11px; color:var(--ink-3); letter-spacing:2px; z-index:100; }
+#pageInfo { position:fixed; bottom:24px; right:28px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--ink-3); z-index:100; }
+#hint { position:fixed; bottom:24px; left:28px; font-size:12px; color:var(--ink-3); opacity:0.6; z-index:100; }
+#regionSelector { position:fixed; top:12px; left:24px; z-index:100; }
+#regionSelector select { background:var(--bg-2); color:var(--ink); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:6px 12px; font-family:'Noto Sans TC',sans-serif; font-size:13px; cursor:pointer; outline:none; }
+#regionSelector select:hover { border-color:var(--accent); }
+#deck { position:fixed; inset:0; }
+.slide { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:60px 80px; opacity:0; pointer-events:none; transform:translateY(20px); transition:opacity .5s ease,transform .5s ease; overflow-y:auto; }
+.slide.active { opacity:1; pointer-events:auto; transform:translateY(0); }
+.slide.map-slide { padding:0; }
+.region-map { width:100%; height:100%; }
+.cover { text-align:center; }
+.cover .tag { font-size:13px; color:var(--accent); letter-spacing:4px; margin-bottom:20px; }
+.cover h1 { font-size:var(--s1); font-weight:900; line-height:1.2; margin-bottom:14px; background:linear-gradient(135deg,var(--ink),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.cover .sub { font-size:var(--t3); color:var(--ink-2); margin-bottom:8px; }
+.cover .meta { font-size:var(--t4); color:var(--ink-3); margin-top:30px; }
+.kicker { font-size:12px; color:var(--accent-2); letter-spacing:3px; text-transform:uppercase; margin-bottom:8px; display:block; }
+.t1 { font-size:var(--t1); font-weight:700; line-height:1.25; margin-bottom:12px; }
+.t2 { font-size:var(--t2); font-weight:600; margin-bottom:10px; }
+.t3 { font-size:var(--t3); line-height:1.6; color:var(--ink-2); }
+.t4 { font-size:var(--t4); color:var(--ink-3); }
+.three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-top:20px; }
+.type-card { background:var(--bg-2); border-radius:14px; padding:28px 24px; border:1px solid rgba(255,255,255,0.06); cursor:default; transition:border-color .3s,transform .3s,background .3s; }
+.type-card:hover { border-color:var(--accent); transform:translateY(-4px); background:var(--bg-3); }
+.type-card h3 { font-size:var(--t3); font-weight:700; margin-bottom:6px; }
+.type-card .badge { font-size:10px; color:var(--accent); letter-spacing:2px; display:block; margin-bottom:6px; }
+.type-card p { font-size:var(--t4); color:var(--ink-2); line-height:1.5; }
+.comp-table { width:100%; border-collapse:collapse; font-size:15px; margin-top:14px; }
+.comp-table th { text-align:left; padding:10px 8px; border-bottom:1px solid rgba(255,255,255,0.12); color:var(--ink-3); font-weight:600; font-size:13px; letter-spacing:1px; cursor:pointer; user-select:none; white-space:nowrap; }
+.comp-table th:hover { color:var(--accent); }
+.comp-table th::after { content:' ⇅'; font-size:11px; color:var(--ink-3); }
+.comp-table td { padding:8px; border-bottom:1px solid rgba(255,255,255,0.05); color:var(--ink-2); white-space:nowrap; font-size:14px; }
+.comp-table tr:hover td { background:rgba(0,212,255,0.04); }
+.comp-table td:first-child { font-weight:600; color:var(--ink); position:sticky; left:0; background:var(--bg); }
+.comp-table th:first-child { position:sticky; left:0; background:var(--bg); }
+.comp-table th:nth-child(n+2),.comp-table td:nth-child(n+2) { text-align:center; }
+.comp-wrap { overflow-x:auto; border-radius:10px; border:1px solid rgba(255,255,255,0.06); }
+.leaflet-container { background:#0a0e27 !important; }
+.leaflet-popup-content-wrapper { border-radius:8px; }
+.leaflet-control-zoom a { background:var(--bg-2) !important; color:var(--ink) !important; border-color:rgba(255,255,255,0.1) !important; }
+.popup-content { font-size:12px; line-height:1.5; max-height:360px; overflow-y:auto; }
+.popup-content .p-name { font-weight:700; font-size:14px; color:#1a3a5c; }
+.popup-content .p-detail { color:#555; margin-top:1px; }
+.popup-content .p-specs { margin-top:4px; font-size:12px; color:#1565c0; font-weight:600; background:#e3f2fd; padding:4px 8px; border-radius:4px; }
+.popup-content .p-rel-title { font-weight:700; font-size:12px; color:#1a3a5c; margin-top:6px; padding-top:4px; border-top:1px solid #ddd; }
+.closing { text-align:center; }
+.closing .big { font-size:var(--s1); font-weight:900; line-height:1.3; background:linear-gradient(135deg,var(--accent),var(--accent-2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:16px; }
+.closing .cta { font-size:var(--t3); color:var(--ink-2); margin-bottom:30px; }
+.closing .btn { display:inline-block; padding:14px 40px; border-radius:8px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:#fff; font-size:var(--t4); font-weight:700; text-decoration:none; transition:transform .3s; cursor:pointer; border:none; }
+.closing .btn:hover { transform:scale(1.05); }
+@media (max-width:900px) {
+  .slide { padding:40px 30px; }
+  .three-col { grid-template-columns:1fr; gap:14px; }
+  :root { --s1:48px; --s2:34px; --t1:32px; --t2:24px; --t3:17px; }
+}
+</style>
+</head>
+<body>
+
+<div id="progress"></div>
+<div id="section-tag">全台概覽</div>
+<div id="pageInfo">1 / 6</div>
+<div id="hint">← 方向鍵 / 點擊兩側 →</div>
+<div id="regionSelector">
+  <select id="regionSelect" onchange="switchRegion(this.value)">
+    <option value="hualien">花蓮</option>
+    <option value="yilan">宜蘭</option>
+    <option value="taipei">北區（台北·新北·基隆）</option>
+    <option value="taoyuan">桃園</option>
+    <option value="hsinchu">新竹·苗栗</option>
+    <option value="taichung">台中·彰化</option>
+    <option value="yunlin">雲林·嘉義·南投</option>
+    <option value="tainan">台南</option>
+    <option value="kaohsiung">高雄</option>
+    <option value="pingtung">屏東</option>
+    <option value="taitung">台東</option>
+  </select>
+</div>
+
+<main id="deck">
+
+<section class="slide" data-slide="hualien-cover" data-region="hualien">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>花蓮<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">19 家營業中業者 · 1star 2家 · 2star 9家 · 3star 4家 · 4star 2家 · 5star 2家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="hualien-overview" data-region="hualien">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">花蓮</span>
+    <div class="t1" style="margin-bottom:20px">花蓮預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">19 家營業中業者，2家1星、9家2星、4家3星、2家4星、2家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="hualien-map" data-region="hualien">
+  <div id="map-hualien" class="region-map"></div>
+</section>
+<section class="slide" data-slide="hualien-table" data-region="hualien">
+  <div class="slide-inner">
+    <span class="kicker">花蓮</span>
+    <div class="t2">花蓮業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-hualien">
+        <thead><tr>
+          <th onclick="sortTable('hualien',0)">公司名稱</th>
+          <th onclick="sortTable('hualien',1)">星等</th>
+          <th onclick="sortTable('hualien',2)">資本額</th>
+          <th onclick="sortTable('hualien',3)">設立年</th>
+          <th onclick="sortTable('hualien',4)">負責人</th>
+          <th onclick="sortTable('hualien',5)">認證</th>
+          <th onclick="sortTable('hualien',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>亞東預拌混凝土（美崙廠）</td><td>5★</td><td>20.0億</td><td>2001</td><td>—</td><td>—</td><td>140 m³/hr</td></tr><tr><td>鳳勝實業（花蓮廠）</td><td>4★</td><td>6.0億</td><td>—</td><td>—</td><td>—</td><td>130 m³/hr</td></tr><tr><td>威神企業</td><td>3★</td><td>4800萬</td><td>1987</td><td>梁億宏｜預拌+土石採取+廢棄物清除</td><td>—</td><td>—</td></tr><tr><td>鼎泰興預拌混凝土</td><td>3★</td><td>4100萬</td><td>2003</td><td>黃銘華</td><td>—</td><td>—</td></tr><tr><td>友誠有限公司</td><td>3★</td><td>3000萬</td><td>1994</td><td>方來興｜預拌+瀝青｜和平工業區</td><td>—</td><td>—</td></tr><tr><td>展信實業有限公司</td><td>3★</td><td>2950萬</td><td>1992</td><td>曾雲嬌｜月均4,000m³｜關係：展信營造</td><td>—</td><td>—</td></tr><tr><td>友正預拌混凝廠</td><td>2★</td><td>2000萬</td><td>1992</td><td>—</td><td>—</td><td>270 m³/hr</td></tr><tr><td>友砂預拌廠</td><td>2★</td><td>2000萬</td><td>1998</td><td>—</td><td>—</td><td>—</td></tr><tr><td>花建實業</td><td>2★</td><td>1800萬</td><td>1990</td><td>陳東堯(前方來興)｜友正集團關聯</td><td>—</td><td>—</td></tr><tr><td>陸紀實業有限公司</td><td>2★</td><td>1000萬</td><td>1995</td><td>李煥陞</td><td>—</td><td>—</td></tr><tr><td>長雄預拌混凝土廠</td><td>2★</td><td>500萬</td><td>1973</td><td>—</td><td>—</td><td>140 m³/hr</td></tr><tr><td>大元預拌混凝土</td><td>1★</td><td>500萬</td><td>2022</td><td>温茗勝｜工廠：玉里鎮新民8-1號</td><td>—</td><td>—</td></tr><tr><td>政旺企業（股）</td><td>2★</td><td>500萬</td><td>1980</td><td>變更為張榮耀</td><td>—</td><td>—</td></tr><tr><td>錦山企業有限公司</td><td>2★</td><td>500萬</td><td>1998</td><td>邱洪章｜前身全章企業社</td><td>—</td><td>—</td></tr><tr><td>貫天下預拌混凝土（股）</td><td>2★</td><td>50萬</td><td>—</td><td>王祥富｜月均5,000–6,000m³</td><td>—</td><td>—</td></tr><tr><td>利泰工程行</td><td>1★</td><td>48萬</td><td>1991</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥花蓮廠（預拌混凝土工場）</td><td>5★</td><td>—</td><td>1994</td><td>—</td><td>—</td><td>140 m³/hr</td></tr><tr><td>定穎預拌混凝土（吉安廠）</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>80 m³/hr</td></tr><tr><td>鳳勝實業（壽豐廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="hualien-insights" data-region="hualien">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">花蓮 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>19 家業者</h3>
+        <p>2 家全國性大廠、2 家在地龍頭、4 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>亞東預拌混凝土</h3>
+        <p>資本額 20.0億，設立於 2001</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>7 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最高產能</span>
+        <h3>友正預拌混凝廠</h3>
+        <p>270 m³/hr</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="yilan-cover" data-region="yilan">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>宜蘭<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">13 家營業中業者 · 2star 3家 · 3star 4家 · 4star 4家 · 5star 2家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="yilan-overview" data-region="yilan">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">宜蘭</span>
+    <div class="t1" style="margin-bottom:20px">宜蘭預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">13 家營業中業者，3家2星、4家3星、4家4星、2家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="yilan-map" data-region="yilan">
+  <div id="map-yilan" class="region-map"></div>
+</section>
+<section class="slide" data-slide="yilan-table" data-region="yilan">
+  <div class="slide-inner">
+    <span class="kicker">宜蘭</span>
+    <div class="t2">宜蘭業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-yilan">
+        <thead><tr>
+          <th onclick="sortTable('yilan',0)">公司名稱</th>
+          <th onclick="sortTable('yilan',1)">星等</th>
+          <th onclick="sortTable('yilan',2)">資本額</th>
+          <th onclick="sortTable('yilan',3)">設立年</th>
+          <th onclick="sortTable('yilan',4)">負責人</th>
+          <th onclick="sortTable('yilan',5)">認證</th>
+          <th onclick="sortTable('yilan',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>久屋預拌混凝土</td><td>3★</td><td>8000萬</td><td>1982</td><td>:簡志耀｜員工26人</td><td>—</td><td>—</td></tr><tr><td>得福混凝土工業</td><td>3★</td><td>6000萬</td><td>1979</td><td>—</td><td>—</td><td>—</td></tr><tr><td>立泰預拌混凝土工業</td><td>3★</td><td>5000萬</td><td>1993</td><td>:楊欣浩｜員工34人｜兼營瀝青混凝土</td><td>—</td><td>—</td></tr><tr><td>享正實業</td><td>3★</td><td>4968萬</td><td>1987</td><td>:林文政｜ISO9002｜2套拌合機+15車</td><td>ISO</td><td>—</td></tr><tr><td>福得混凝土工業</td><td>2★</td><td>4160萬</td><td>1985</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台泥宜蘭分廠</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>潤泰精密材料冬山廠</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宜興預拌混凝土（總部）</td><td>4★</td><td>—</td><td>1996</td><td>:李興和</td><td>GRMC</td><td>—</td></tr><tr><td>宜興預拌混凝土（冬山二廠）</td><td>4★</td><td>—</td><td>2003</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宜興預拌混凝土（冬山三廠）</td><td>4★</td><td>—</td><td>2012</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宜興預拌混凝土（宜蘭梅洲廠）</td><td>4★</td><td>—</td><td>2013</td><td>—</td><td>—</td><td>—</td></tr><tr><td>禹盛混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>梅洲混凝土工業股份有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="yilan-insights" data-region="yilan">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">宜蘭 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>13 家業者</h3>
+        <p>2 家全國性大廠、4 家在地龍頭、4 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>久屋預拌混凝土</h3>
+        <p>資本額 8000萬，設立於 1982</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>6 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>2 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taipei-cover" data-region="taipei">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>北區（台北·新北·基隆）<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">25 家營業中業者 · 2star 5家 · 3star 6家 · 4star 6家 · 5star 8家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="taipei-overview" data-region="taipei">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">北區（台北·新北·基隆）</span>
+    <div class="t1" style="margin-bottom:20px">北區（台北·新北·基隆）預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">25 家營業中業者，5家2星、6家3星、6家4星、8家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="taipei-map" data-region="taipei">
+  <div id="map-taipei" class="region-map"></div>
+</section>
+<section class="slide" data-slide="taipei-table" data-region="taipei">
+  <div class="slide-inner">
+    <span class="kicker">北區（台北·新北·基隆）</span>
+    <div class="t2">北區（台北·新北·基隆）業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-taipei">
+        <thead><tr>
+          <th onclick="sortTable('taipei',0)">公司名稱</th>
+          <th onclick="sortTable('taipei',1)">星等</th>
+          <th onclick="sortTable('taipei',2)">資本額</th>
+          <th onclick="sortTable('taipei',3)">設立年</th>
+          <th onclick="sortTable('taipei',4)">負責人</th>
+          <th onclick="sortTable('taipei',5)">認證</th>
+          <th onclick="sortTable('taipei',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>台灣水泥台北水泥製品廠</td><td>5★</td><td>1000.0億</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（汐止廠）</td><td>5★</td><td>20.0億</td><td>—</td><td>李坤炎</td><td>—</td><td>—</td></tr><tr><td>宥辰興業</td><td>3★</td><td>4.0億</td><td>2016</td><td>藍隆寬｜預拌混凝土製造</td><td>—</td><td>—</td></tr><tr><td>龍形企業（八里廠）</td><td>3★</td><td>8000萬</td><td>1991</td><td>施阿祥｜ISO-9001｜捷運局合格供應商｜實績：台北港、十三行博物館</td><td>ISO</td><td>—</td></tr><tr><td>松達建材</td><td>2★</td><td>7000萬</td><td>1988</td><td>—</td><td>—</td><td>—</td></tr><tr><td>合興預拌混凝土（三峯廠）</td><td>3★</td><td>4500萬</td><td>1992</td><td>鄧桂英｜GRMC認證</td><td>GRMC</td><td>—</td></tr><tr><td>大象實業</td><td>3★</td><td>4189萬</td><td>1995</td><td>謝英美｜GRMC認證</td><td>GRMC</td><td>—</td></tr><tr><td>陽明混凝土</td><td>3★</td><td>2000萬</td><td>1994</td><td>郭淑如｜北海岸</td><td>—</td><td>—</td></tr><tr><td>大漢預拌廠</td><td>2★</td><td>2000萬</td><td>1987</td><td>蔡錦達</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（台北港廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（汐止廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（土城廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（八里廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（基隆廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（土城廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>力泰建設企業（士林廠）</td><td>4★</td><td>—</td><td>—</td><td>吳良材｜北部最大獨立業者</td><td>—</td><td>—</td></tr><tr><td>力泰建設企業（汐止廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>幸孚預拌混凝土（土城廠）</td><td>4★</td><td>—</td><td>—</td><td>陳韻如｜樹林+五股+汐止+基隆共5廠</td><td>—</td><td>—</td></tr><tr><td>幸孚預拌混凝土（基隆廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>信一預拌混凝土</td><td>3★</td><td>—</td><td>1990</td><td>楊智雄｜信大水泥關係</td><td>—</td><td>—</td></tr><tr><td>和昌國際工業（汐止廠）</td><td>4★</td><td>—</td><td>—</td><td>江程金</td><td>—</td><td>—</td></tr><tr><td>和昌國際工業（內湖廠）</td><td>4★</td><td>—</td><td>—</td><td>江程金｜GRMC認證｜汐止廠+觀音廠+楊梅廠</td><td>GRMC</td><td>—</td></tr><tr><td>聯興建材工業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>富品混凝土工業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>世芳預拌混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taipei-insights" data-region="taipei">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">北區（台北·新北·基隆） — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>25 家業者</h3>
+        <p>8 家全國性大廠、6 家在地龍頭、6 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>台灣水泥台北水泥製品廠</h3>
+        <p>資本額 1000.0億</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>6 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>3 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taoyuan-cover" data-region="taoyuan">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>桃園<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">22 家營業中業者 · 3star 7家 · 4star 5家 · 5star 10家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="taoyuan-overview" data-region="taoyuan">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">桃園</span>
+    <div class="t1" style="margin-bottom:20px">桃園預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">22 家營業中業者，7家3星、5家4星、10家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="taoyuan-map" data-region="taoyuan">
+  <div id="map-taoyuan" class="region-map"></div>
+</section>
+<section class="slide" data-slide="taoyuan-table" data-region="taoyuan">
+  <div class="slide-inner">
+    <span class="kicker">桃園</span>
+    <div class="t2">桃園業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-taoyuan">
+        <thead><tr>
+          <th onclick="sortTable('taoyuan',0)">公司名稱</th>
+          <th onclick="sortTable('taoyuan',1)">星等</th>
+          <th onclick="sortTable('taoyuan',2)">資本額</th>
+          <th onclick="sortTable('taoyuan',3)">設立年</th>
+          <th onclick="sortTable('taoyuan',4)">負責人</th>
+          <th onclick="sortTable('taoyuan',5)">認證</th>
+          <th onclick="sortTable('taoyuan',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>亞東預拌混凝土（桃園廠）</td><td>5★</td><td>20.0億</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國順預拌混凝土（龍華廠）</td><td>3★</td><td>2.0億</td><td>1993</td><td>劉世翔｜GRMC認證</td><td>GRMC</td><td>—</td></tr><tr><td>慶龍預拌混凝土</td><td>3★</td><td>1.0億</td><td>1993</td><td>楊進連｜GRMC認證｜另設八德廠</td><td>GRMC</td><td>—</td></tr><tr><td>國普混凝土工業</td><td>3★</td><td>7800萬</td><td>1987</td><td>呂湘香｜預拌混凝土/瀝青/骨材</td><td>—</td><td>—</td></tr><tr><td>新三亞預拌混凝土廠</td><td>4★</td><td>6000萬</td><td>1999</td><td>陳易穰｜GRMC綠混凝土認證｜金石獎｜公共工程9成</td><td>GRMC</td><td>—</td></tr><tr><td>大園預拌混凝土</td><td>3★</td><td>3600萬</td><td>2003</td><td>蘇添全</td><td>—</td><td>—</td></tr><tr><td>慶隆預拌混凝土</td><td>3★</td><td>2988萬</td><td>1996</td><td>朱瑞爐</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（林口廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（蘆竹二廠）</td><td>5★</td><td>—</td><td>1998</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（八德廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（新屋廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（林口廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>台灣水泥（龜山分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（桃園二廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（桃園分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>武雄實業（觀音廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>慶皇水泥</td><td>3★</td><td>—</td><td>1995</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（中壢廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>和昌國際工業（楊梅廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>和昌國際工業（觀音廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宜興預拌混凝土（楊梅廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>幸孚預拌混凝土（埔心廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taoyuan-insights" data-region="taoyuan">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">桃園 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>22 家業者</h3>
+        <p>10 家全國性大廠、5 家在地龍頭、7 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>亞東預拌混凝土</h3>
+        <p>資本額 20.0億</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>2 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>5 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="hsinchu-cover" data-region="hsinchu">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>新竹·苗栗<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">20 家營業中業者 · 2star 4家 · 3star 7家 · 4star 2家 · 5star 7家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="hsinchu-overview" data-region="hsinchu">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">新竹·苗栗</span>
+    <div class="t1" style="margin-bottom:20px">新竹·苗栗預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">20 家營業中業者，4家2星、7家3星、2家4星、7家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="hsinchu-map" data-region="hsinchu">
+  <div id="map-hsinchu" class="region-map"></div>
+</section>
+<section class="slide" data-slide="hsinchu-table" data-region="hsinchu">
+  <div class="slide-inner">
+    <span class="kicker">新竹·苗栗</span>
+    <div class="t2">新竹·苗栗業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-hsinchu">
+        <thead><tr>
+          <th onclick="sortTable('hsinchu',0)">公司名稱</th>
+          <th onclick="sortTable('hsinchu',1)">星等</th>
+          <th onclick="sortTable('hsinchu',2)">資本額</th>
+          <th onclick="sortTable('hsinchu',3)">設立年</th>
+          <th onclick="sortTable('hsinchu',4)">負責人</th>
+          <th onclick="sortTable('hsinchu',5)">認證</th>
+          <th onclick="sortTable('hsinchu',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>國順預拌混凝土（新竹廠）</td><td>3★</td><td>3.0億</td><td>1993</td><td>劉世翔｜GRMC認證｜ISO9001</td><td>GRMC/ISO</td><td>180 m³/hr</td></tr><tr><td>永炬企業</td><td>4★</td><td>2.0億</td><td>1981</td><td>羅煥綺｜羅家家族｜GRMC認證｜ISO9001</td><td>GRMC/ISO</td><td>400 m³/hr</td></tr><tr><td>亞興水泥製品（新竹廠/亞東關係）</td><td>5★</td><td>1.0億</td><td>—</td><td>金崇仁｜GRMC認證</td><td>GRMC</td><td>—</td></tr><tr><td>永協企業</td><td>3★</td><td>1.0億</td><td>1993</td><td>謝焸麒｜GRMC認證#136｜湖口在地廠</td><td>GRMC</td><td>—</td></tr><tr><td>毅和實業（寶山廠）</td><td>3★</td><td>8020萬</td><td>1993</td><td>黃伶｜3廠(寶山/港墘/大厝)｜碳足跡認證</td><td>碳足跡</td><td>—</td></tr><tr><td>協鑫混凝土</td><td>2★</td><td>4000萬</td><td>2007</td><td>賴柊源</td><td>—</td><td>—</td></tr><tr><td>錦鋒混凝土</td><td>2★</td><td>3850萬</td><td>1986</td><td>林登倫</td><td>—</td><td>—</td></tr><tr><td>福宏實業</td><td>2★</td><td>2500萬</td><td>1979</td><td>張煥林</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（新竹廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（東大廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（竹北廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（苗栗廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞興水泥製品（竹北廠/亞東關係）</td><td>5★</td><td>—</td><td>1988</td><td>鍾政宗｜1988年設立</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（新竹分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>環球混凝土（新竹廠/環泥子公司）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國順預拌混凝土（竹南廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>國順預拌混凝土（苗栗廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>毅和實業（竹南港墘廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>頭份混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>毅和實業（大厝廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="hsinchu-insights" data-region="hsinchu">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">新竹·苗栗 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>20 家業者</h3>
+        <p>7 家全國性大廠、2 家在地龍頭、7 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>國順預拌混凝土</h3>
+        <p>資本額 3.0億，設立於 1993</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>11 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>7 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最高產能</span>
+        <h3>永炬企業</h3>
+        <p>400 m³/hr</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taichung-cover" data-region="taichung">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>台中·彰化<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">26 家營業中業者 · 1star 1家 · 2star 7家 · 3star 7家 · 4star 3家 · 5star 8家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="taichung-overview" data-region="taichung">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">台中·彰化</span>
+    <div class="t1" style="margin-bottom:20px">台中·彰化預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">26 家營業中業者，1家1星、7家2星、7家3星、3家4星、8家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="taichung-map" data-region="taichung">
+  <div id="map-taichung" class="region-map"></div>
+</section>
+<section class="slide" data-slide="taichung-table" data-region="taichung">
+  <div class="slide-inner">
+    <span class="kicker">台中·彰化</span>
+    <div class="t2">台中·彰化業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-taichung">
+        <thead><tr>
+          <th onclick="sortTable('taichung',0)">公司名稱</th>
+          <th onclick="sortTable('taichung',1)">星等</th>
+          <th onclick="sortTable('taichung',2)">資本額</th>
+          <th onclick="sortTable('taichung',3)">設立年</th>
+          <th onclick="sortTable('taichung',4)">負責人</th>
+          <th onclick="sortTable('taichung',5)">認證</th>
+          <th onclick="sortTable('taichung',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>亞東預拌混凝土（台中廠/遠東關係）</td><td>5★</td><td>20.0億</td><td>—</td><td>李坤炎｜台中廠</td><td>—</td><td>—</td></tr><tr><td>福鹿預拌混凝土</td><td>3★</td><td>7800萬</td><td>1991</td><td>黃周秀鶴｜鹿港彰濱工業區</td><td>—</td><td>—</td></tr><tr><td>廣達混凝土股份有限公司</td><td>3★</td><td>6000萬</td><td>1987</td><td>羅國源｜台中工業區</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（台中廠）</td><td>5★</td><td>—</td><td>—</td><td>趙子敏</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（大里廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>亞東預拌混凝土（烏日廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>亞東預拌混凝土（潭子廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（霧峰廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（台中水泥製品廠）</td><td>5★</td><td>—</td><td>1978</td><td>—</td><td>ISO/綠色工廠</td><td>—</td></tr><tr><td>環球混凝土（烏日廠/環泥子公司）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>興威股份有限公司</td><td>4★</td><td>—</td><td>1993</td><td>顏子芳｜GRMC認證｜台中在地指標廠</td><td>GRMC</td><td>—</td></tr><tr><td>中來工業股份有限公司</td><td>3★</td><td>—</td><td>1987</td><td>｜大里廠｜供應屯區</td><td>—</td><td>—</td></tr><tr><td>長生預拌混凝土（烏日廠）</td><td>3★</td><td>—</td><td>1987</td><td>鍾雲城｜GRMC認證</td><td>GRMC</td><td>—</td></tr><tr><td>久連預拌混凝土</td><td>3★</td><td>—</td><td>—</td><td>梁國斌｜鹿港福興區</td><td>—</td><td>—</td></tr><tr><td>裕山混凝土</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>全富混凝土工業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>佳生砂石企業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>伸太田工業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>豐崗實業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>甲東洋土</td><td>1★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>民峰實業股份有限公司梧棲預拌混凝土廠</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>野馬預拌混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>埔塩預拌混凝土股份有限公司埔鹽廠</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>有駿預拌混凝土股份有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（大肚分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>興威股份有限公司（太平廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taichung-insights" data-region="taichung">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">台中·彰化 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>26 家業者</h3>
+        <p>8 家全國性大廠、3 家在地龍頭、7 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>亞東預拌混凝土</h3>
+        <p>資本額 20.0億</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>15 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>5 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="yunlin-cover" data-region="yunlin">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>雲林·嘉義·南投<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">23 家營業中業者 · 1star 2家 · 2star 4家 · 3star 7家 · 4star 4家 · 5star 6家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="yunlin-overview" data-region="yunlin">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">雲林·嘉義·南投</span>
+    <div class="t1" style="margin-bottom:20px">雲林·嘉義·南投預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">23 家營業中業者，2家1星、4家2星、7家3星、4家4星、6家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="yunlin-map" data-region="yunlin">
+  <div id="map-yunlin" class="region-map"></div>
+</section>
+<section class="slide" data-slide="yunlin-table" data-region="yunlin">
+  <div class="slide-inner">
+    <span class="kicker">雲林·嘉義·南投</span>
+    <div class="t2">雲林·嘉義·南投業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-yunlin">
+        <thead><tr>
+          <th onclick="sortTable('yunlin',0)">公司名稱</th>
+          <th onclick="sortTable('yunlin',1)">星等</th>
+          <th onclick="sortTable('yunlin',2)">資本額</th>
+          <th onclick="sortTable('yunlin',3)">設立年</th>
+          <th onclick="sortTable('yunlin',4)">負責人</th>
+          <th onclick="sortTable('yunlin',5)">認證</th>
+          <th onclick="sortTable('yunlin',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>國產建材實業（嘉太廠）</td><td>5★</td><td>—</td><td>—</td><td>陳以益</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（嘉義廠）</td><td>5★</td><td>—</td><td>—</td><td>陳以益</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（斗南廠）</td><td>5★</td><td>—</td><td>—</td><td>吳國彰</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（雲林廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（布袋廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>興威股份有限公司（草屯廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>泉溢開發有限公司（朴子廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>承慶企業（山慶瀝青）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>煜昌工業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>德欣先進</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>益昌砂石企業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>義展實業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宏益達建材企業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>宏進建材</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>天源預拌混凝土</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>任建企業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>源順預拌混凝土</td><td>1★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>聯成預拌混凝土</td><td>1★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>盛記預拌混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（嘉義分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（西螺廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（嘉泰廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（朴子廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="yunlin-insights" data-region="yunlin">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">雲林·嘉義·南投 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>23 家業者</h3>
+        <p>6 家全國性大廠、4 家在地龍頭、7 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>11 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>2 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="tainan-cover" data-region="tainan">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>台南<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">23 家營業中業者 · 2star 4家 · 3star 4家 · 4star 5家 · 5star 10家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="tainan-overview" data-region="tainan">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">台南</span>
+    <div class="t1" style="margin-bottom:20px">台南預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">23 家營業中業者，4家2星、4家3星、5家4星、10家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="tainan-map" data-region="tainan">
+  <div id="map-tainan" class="region-map"></div>
+</section>
+<section class="slide" data-slide="tainan-table" data-region="tainan">
+  <div class="slide-inner">
+    <span class="kicker">台南</span>
+    <div class="t2">台南業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-tainan">
+        <thead><tr>
+          <th onclick="sortTable('tainan',0)">公司名稱</th>
+          <th onclick="sortTable('tainan',1)">星等</th>
+          <th onclick="sortTable('tainan',2)">資本額</th>
+          <th onclick="sortTable('tainan',3)">設立年</th>
+          <th onclick="sortTable('tainan',4)">負責人</th>
+          <th onclick="sortTable('tainan',5)">認證</th>
+          <th onclick="sortTable('tainan',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>國產建材實業（台南廠）</td><td>5★</td><td>—</td><td>—</td><td>楊坪林</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（台南廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（永康廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（仁德廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（新營廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（高雄水泥製品廠善化分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>環球水泥（台南預拌混凝土場）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>名人預拌混凝土</td><td>3★</td><td>—</td><td>1995</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>太固實業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>竑榮實業</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>豐旗實業</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>丁丁有限公司預拌混凝土廠</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>安筑混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>玉楠混凝土企業股份有限公司楠西廠</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（仁德廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（新市廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（台南分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（安平分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（仁德廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（新營廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（永康預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（麻豆預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>竑榮實業（安定廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="tainan-insights" data-region="tainan">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">台南 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>23 家業者</h3>
+        <p>10 家全國性大廠、5 家在地龍頭、4 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>8 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>2 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="kaohsiung-cover" data-region="kaohsiung">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>高雄<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">21 家營業中業者 · 2star 1家 · 3star 2家 · 4star 5家 · 5star 13家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="kaohsiung-overview" data-region="kaohsiung">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">高雄</span>
+    <div class="t1" style="margin-bottom:20px">高雄預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">21 家營業中業者，1家2星、2家3星、5家4星、13家5星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="kaohsiung-map" data-region="kaohsiung">
+  <div id="map-kaohsiung" class="region-map"></div>
+</section>
+<section class="slide" data-slide="kaohsiung-table" data-region="kaohsiung">
+  <div class="slide-inner">
+    <span class="kicker">高雄</span>
+    <div class="t2">高雄業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-kaohsiung">
+        <thead><tr>
+          <th onclick="sortTable('kaohsiung',0)">公司名稱</th>
+          <th onclick="sortTable('kaohsiung',1)">星等</th>
+          <th onclick="sortTable('kaohsiung',2)">資本額</th>
+          <th onclick="sortTable('kaohsiung',3)">設立年</th>
+          <th onclick="sortTable('kaohsiung',4)">負責人</th>
+          <th onclick="sortTable('kaohsiung',5)">認證</th>
+          <th onclick="sortTable('kaohsiung',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>鳳勝實業（仁武廠/總公司）</td><td>4★</td><td>6.0億</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（仁武廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（鳳山廠）</td><td>5★</td><td>—</td><td>—</td><td>潘建男</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（高雄廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（大順廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（小港廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>亞東預拌混凝土（仁武廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（高雄水泥製品廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>GRMC</td><td>—</td></tr><tr><td>環球水泥（鳳山預拌混凝土場）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>高屏預拌混凝土有限公司</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（小港廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（高雄廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>國產建材實業（岡山廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（小港分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（仁武分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>台灣水泥（路竹分廠）</td><td>5★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（小港預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（大湖預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（楠梓預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>竑榮實業（高雄廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>竑榮實業（仁武廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="kaohsiung-insights" data-region="kaohsiung">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">高雄 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>21 家業者</h3>
+        <p>13 家全國性大廠、5 家在地龍頭、2 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>鳳勝實業</h3>
+        <p>資本額 6.0億</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>3 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">GRMC認證</span>
+        <h3>1 家通過</h3>
+        <p>預拌混凝土公會 GRMC 認證廠商</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="pingtung-cover" data-region="pingtung">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>屏東<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">7 家營業中業者 · 1star 1家 · 2star 3家 · 3star 1家 · 4star 2家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="pingtung-overview" data-region="pingtung">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">屏東</span>
+    <div class="t1" style="margin-bottom:20px">屏東預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">7 家營業中業者，1家1星、3家2星、1家3星、2家4星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="pingtung-map" data-region="pingtung">
+  <div id="map-pingtung" class="region-map"></div>
+</section>
+<section class="slide" data-slide="pingtung-table" data-region="pingtung">
+  <div class="slide-inner">
+    <span class="kicker">屏東</span>
+    <div class="t2">屏東業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-pingtung">
+        <thead><tr>
+          <th onclick="sortTable('pingtung',0)">公司名稱</th>
+          <th onclick="sortTable('pingtung',1)">星等</th>
+          <th onclick="sortTable('pingtung',2)">資本額</th>
+          <th onclick="sortTable('pingtung',3)">設立年</th>
+          <th onclick="sortTable('pingtung',4)">負責人</th>
+          <th onclick="sortTable('pingtung',5)">認證</th>
+          <th onclick="sortTable('pingtung',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>鳳勝實業（屏東廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（高樹廠）</td><td>3★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（佳冬廠）</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>鳳勝實業（恆春廠）</td><td>1★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>城夆預拌混凝土有限公司九如廠</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>超群混凝土工業股份有限公司內埔廠</td><td>2★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr><tr><td>環球水泥（潮州預拌廠）</td><td>4★</td><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="pingtung-insights" data-region="pingtung">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">屏東 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>7 家業者</h3>
+        <p>0 家全國性大廠、2 家在地龍頭、1 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>2 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taitung-cover" data-region="taitung">
+  <div class="slide-inner cover">
+    <div class="tag">MARKET MEET 2026</div>
+    <h1>台東<br>預拌混凝土廠<br>競爭力比較</h1>
+    <p class="sub">10 家營業中業者 · 1star 4家 · 2star 6家</p>
+    <p class="meta">資料整合：工商登記 / 競爭力調查 / 廠商資料收集 ｜ 2025 年度數據</p>
+  </div>
+</section>
+<section class="slide" data-slide="taitung-overview" data-region="taitung">
+  <div class="slide-inner" style="text-align:center;max-width:800px">
+    <span class="kicker">台東</span>
+    <div class="t1" style="margin-bottom:20px">台東預拌混凝土市場，<br>競爭格局一次看清</div>
+    <p class="t3" style="color:var(--ink-3)">10 家營業中業者，4家1星、6家2星，完整呈現市場生態。</p>
+  </div>
+</section>
+<section class="slide map-slide" data-slide="taitung-map" data-region="taitung">
+  <div id="map-taitung" class="region-map"></div>
+</section>
+<section class="slide" data-slide="taitung-table" data-region="taitung">
+  <div class="slide-inner">
+    <span class="kicker">台東</span>
+    <div class="t2">台東業者總體比較</div>
+    <p class="t4" style="color:var(--ink-3);margin-bottom:6px">點擊欄位標題排序 · 左右捲動看全部</p>
+    <div class="comp-wrap">
+      <table class="comp-table" id="table-taitung">
+        <thead><tr>
+          <th onclick="sortTable('taitung',0)">公司名稱</th>
+          <th onclick="sortTable('taitung',1)">星等</th>
+          <th onclick="sortTable('taitung',2)">資本額</th>
+          <th onclick="sortTable('taitung',3)">設立年</th>
+          <th onclick="sortTable('taitung',4)">負責人</th>
+          <th onclick="sortTable('taitung',5)">認證</th>
+          <th onclick="sortTable('taitung',6)">產能</th>
+        </tr></thead>
+        <tbody><tr><td>志昇預拌混凝土</td><td>2★</td><td>2900萬</td><td>1995</td><td>黃榮鴻｜電腦全自動控制｜關山/池上/南橫供應</td><td>—</td><td>—</td></tr><tr><td>陽宸企業</td><td>2★</td><td>2400萬</td><td>2006</td><td>陳俊良｜預拌混凝土/水泥製品/土石採取</td><td>—</td><td>—</td></tr><tr><td>延昌混凝土</td><td>2★</td><td>2000萬</td><td>1993</td><td>林昱廷｜預拌混凝土/水泥製品/土石採取</td><td>—</td><td>—</td></tr><tr><td>瑞晟砂石</td><td>2★</td><td>2000萬</td><td>2006</td><td>張美玉｜砂石/預拌混凝土｜填土工程承攬</td><td>—</td><td>—</td></tr><tr><td>佛育企業</td><td>2★</td><td>1000萬</td><td>1994</td><td>吳康源｜預拌混凝土製造</td><td>—</td><td>—</td></tr><tr><td>久明企業</td><td>1★</td><td>1000萬</td><td>1997</td><td>林建平｜預拌混凝土/土石採取｜南迴線供應</td><td>—</td><td>—</td></tr><tr><td>本上企業</td><td>2★</td><td>500萬</td><td>1994</td><td>莊玉葉｜花東逾30年專業預拌廠｜砂石/水泥/混凝土</td><td>—</td><td>—</td></tr><tr><td>綠寶實業</td><td>1★</td><td>500萬</td><td>2024</td><td>張家瑜｜預拌混凝土製造</td><td>—</td><td>—</td></tr><tr><td>鹿原砂石場</td><td>1★</td><td>200萬</td><td>1999</td><td>戴昕恩｜砂石/預拌混凝土</td><td>—</td><td>—</td></tr><tr><td>尚聖營造</td><td>1★</td><td>—</td><td>—</td><td>張宏彬</td><td>—</td><td>—</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="taitung-insights" data-region="taitung">
+  <div class="slide-inner">
+    <span class="kicker">關鍵發現</span>
+    <div class="t2">台東 — 競爭力亮點</div>
+    <div class="three-col" style="margin-top:20px">
+      <div class="type-card">
+        <span class="badge">市場規模</span>
+        <h3>10 家業者</h3>
+        <p>0 家全國性大廠、0 家在地龍頭、0 家區域中型廠</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">最大資本</span>
+        <h3>志昇預拌混凝土</h3>
+        <p>資本額 2900萬，設立於 1995</p>
+      </div>
+      <div class="type-card">
+        <span class="badge">董監事網絡</span>
+        <h3>10 家可查</h3>
+        <p>點擊地圖廠標可查看董監事關係圖譜</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="slide" data-slide="closing" data-region="all">
+  <div class="slide-inner closing">
+    <div class="big">全台預拌<br>市場競爭格局</div>
+    <p class="cta">全台 11 區域 · 209 家業者 · 完整競爭力分析</p>
+    <button class="btn" onclick="goto('all','cover')">重新觀看</button>
+  </div>
+</section>
+</main>
+
+<script>
+// ====== NAVIGATION STATE ======
+let currentRegion = 'taipei';
+const slideTypes = ['cover','overview','map','table','insights'];
+const slideNames = ['封面','概覽','地圖','比較','亮點'];
+let currentSlideIdx = 0;
+const maps = {};
+
+function regionSlideId(region, type) {
+  if (type === 'closing') return 'closing';
+  return region + '-' + type;
+}
+
+function goto(region, type) {
+  if (type === 'closing') {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.querySelector('[data-slide="closing"]').classList.add('active');
+    document.getElementById('pageInfo').textContent = '完成';
+    document.getElementById('section-tag').textContent = '全台總覽';
+    document.getElementById('progress').style.width = '100%';
+    return;
+  }
+  
+  const sid = regionSlideId(region, type);
+  const slide = document.querySelector('[data-slide="' + sid + '"]');
+  if (!slide) return;
+  
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  slide.classList.add('active');
+  
+  currentRegion = region;
+  currentSlideIdx = slideTypes.indexOf(type);
+  if (currentSlideIdx < 0) currentSlideIdx = 0;
+  
+  // Update info
+  document.getElementById('pageInfo').textContent = slideNames[currentSlideIdx] + ' / ' + slideTypes.length;
+  document.getElementById('section-tag').textContent = document.getElementById('regionSelect').options[document.getElementById('regionSelect').selectedIndex].text;
+  document.getElementById('progress').style.width = ((currentSlideIdx + 1) / (slideTypes.length + 1) * 100) + '%';
+  
+  // Init map if needed
+  if (type === 'map') {
+    setTimeout(() => { initMap_region(region); }, 50);
+  }
+}
+
+function initMap_region(region) {
+  if (maps[region]) {
+    maps[region].invalidateSize();
+    return;
+  }
+  // Call the pre-generated init function
+  try { self['initMap_' + region](); } catch(e) { /* map already init */ }
+}
+
+function next() {
+  if (currentSlideIdx < slideTypes.length - 1) {
+    goto(currentRegion, slideTypes[currentSlideIdx + 1]);
+  } else if (currentSlideIdx === slideTypes.length - 1) {
+    goto(currentRegion, 'closing');
+    // Actually just go to closing
+  } else {
+    // On closing, go to next region
+    const sel = document.getElementById('regionSelect');
+    let idx = sel.selectedIndex + 1;
+    if (idx >= sel.options.length) idx = 0;
+    sel.selectedIndex = idx;
+    switchRegion(sel.value);
+  }
+}
+
+function prev() {
+  const sel = document.getElementById('regionSelect');
+  const region = sel.value;
+  const curEl = document.querySelector('.slide.active');
+  const ds = curEl ? curEl.dataset.slide : '';
+  
+  if (ds === 'closing') {
+    goto(region, slideTypes[slideTypes.length - 1]);
+    return;
+  }
+  
+  if (currentSlideIdx > 0) {
+    goto(region, slideTypes[currentSlideIdx - 1]);
+  }
+}
+
+function switchRegion(region) {
+  document.getElementById('regionSelect').value = region;
+  currentRegion = region;
+  currentSlideIdx = 0;
+  goto(region, 'cover');
+}
+
+// Keyboard / click nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+  if (e.key === 'f' || e.key === 'F') { e.preventDefault(); document.documentElement.requestFullscreen().catch(()=>{}); }
+});
+
+document.getElementById('deck').addEventListener('click', e => {
+  if (e.target.closest('.btn') || e.target.closest('.type-card') || e.target.closest('.comp-table') || e.target.closest('.leaflet-container') || e.target.closest('#regionSelector')) return;
+  const w = window.innerWidth;
+  if (e.clientX > w * 0.7) next();
+  else if (e.clientX < w * 0.3) prev();
+});
+
+// Table sorting
+let sortDirs = {};
+function sortTable(region, col) {
+  const tbody = document.querySelector('#table-' + region + ' tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const key = region + '-' + col;
+  sortDirs[key] = !(sortDirs[key]) || undefined;
+  const dir = sortDirs[key] ? 1 : -1;
+  rows.sort((a, b) => {
+    const va = a.cells[col] ? a.cells[col].textContent.trim() : '';
+    const vb = b.cells[col] ? b.cells[col].textContent.trim() : '';
+    const na = parseFloat(va.replace(/[^0-9.]/g, ''));
+    const nb = parseFloat(vb.replace(/[^0-9.]/g, ''));
+    if (!isNaN(na) && !isNaN(nb)) return (na - nb) * dir;
+    return va.localeCompare(vb) * dir;
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ====== PER-REGION MAP INIT FUNCTIONS ======
+
+  // 花蓮
+  maps['hualien'] = null;
+  function initMap_hualien() {
+    if (maps['hualien']) return;
+    const m = L.map('map-hualien', { zoomControl: true }).setView([23.85,121.45], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"亞東預拌混凝土（美崙廠）","addr":"花蓮市美工三街12號","lat":24.0164108,"lng":121.6320073,"group":"5star","detail":"母公司亞泥100%轉投資，資本額20億｜設廠2001年｜全台13廠｜產能180m³/h","specs":"設備 3m³×1｜設計產能 140m³/hr｜年銷 63,931m³｜人力合計 11人","hasRel":false},{"name":"台灣水泥花蓮廠（預拌混凝土工場）","addr":"花蓮市民孝里精美路2-1號","lat":24.0138314,"lng":121.6289907,"group":"5star","detail":"台泥集團｜預拌工場1994年｜花蓮另有水泥廠+和平UHPC中心","specs":"設備 3m³×1｜設計產能 140m³/hr｜年銷由鳳勝代工｜人力合計 10人","hasRel":false},{"name":"鳳勝實業（花蓮廠）","addr":"花蓮市美工五街3號","lat":24.0134506,"lng":121.6340555,"group":"4star","detail":"母公司資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠","specs":"設備 3m³×1｜設計產能 130m³/hr｜年銷含代工 114,728m³｜人力合計 12人","hasRel":false},{"name":"鼎泰興預拌混凝土","addr":"新城鄉新城村新興一路1巷6號","lat":24.1294355,"lng":121.6428992,"group":"3star","detail":"資本額4,100萬｜2003年設立(原名龍華預拌)｜負責人黃銘華","specs":"","hasRel":false},{"name":"威神企業","addr":"吉安鄉光華村華城六街35號","lat":23.9249937,"lng":121.5825473,"group":"3star","detail":"資本額4,800萬｜1987年｜負責人梁億宏｜預拌+土石採取+廢棄物清除","specs":"","hasRel":true},{"name":"友誠有限公司","addr":"秀林鄉和平村和平30-11號","lat":24.2940384,"lng":121.6023807,"group":"3star","detail":"資本額3,000萬｜1994年｜負責人方來興｜預拌+瀝青｜和平工業區","specs":"","hasRel":true},{"name":"友正預拌混凝廠","addr":"吉安鄉光華村華工六路31巷2號","lat":23.9354502,"lng":121.5903549,"group":"2star","detail":"資本額2,000萬｜1992年｜含崇德廠(秀林)+光復廠｜友正集團核心","specs":"設備 3m³×2｜設計產能 270m³/hr｜年銷 100,000m³｜人力合計 17人","hasRel":true},{"name":"花建實業","addr":"鳳林鎮榮開路39-1號","lat":23.7698653,"lng":121.4910701,"group":"2star","detail":"資本額1,800萬｜1990年｜負責人陳東堯(前方來興)｜友正集團關聯","specs":"","hasRel":true},{"name":"長雄預拌混凝土廠","addr":"吉安鄉仁安村南海四街148號","lat":23.9520915,"lng":121.5931644,"group":"2star","detail":"資本額500萬｜1973年(50年老廠)｜邱氏家族(持股86%)｜年銷100,000m³｜人均效率最高","specs":"設備 3m³×1｜設計產能 140m³/hr｜年銷 100,000m³｜人力合計 13人","hasRel":true},{"name":"友砂預拌廠","addr":"花蓮市國裕里富裕十街50巷17號","lat":23.9968395,"lng":121.5977027,"group":"2star","detail":"資本額2,000萬｜1998年｜友正集團關係企業","specs":"","hasRel":true},{"name":"大元預拌混凝土","addr":"吉安鄉仁安村南海七街47號","lat":23.9452078,"lng":121.5928811,"group":"1star","detail":"資本額500萬｜2022年新設｜負責人温茗勝｜工廠：玉里鎮新民8-1號","specs":"","hasRel":true},{"name":"定穎預拌混凝土（吉安廠）","addr":"吉安鄉","lat":23.97,"lng":121.596,"group":"2star","detail":"設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜9 人精簡編制","specs":"設備 2m³×1｜產能 80m³/hr｜年銷 30,000m³｜人力合計 9人","hasRel":false},{"name":"政旺企業（股）","addr":"光復鄉中華路256巷17號","lat":23.6707166,"lng":121.4242939,"group":"2star","detail":"資本額500萬｜1980年｜2025/10負責人變更為張榮耀","specs":"","hasRel":false},{"name":"貫天下預拌混凝土（股）","addr":"瑞穗鄉瑞北村30號","lat":23.5324636,"lng":121.3763246,"group":"2star","detail":"資本額50萬(原800萬2022改組)｜負責人王祥富｜月均5,000–6,000m³","specs":"","hasRel":false},{"name":"陸紀實業有限公司","addr":"瑞穗鄉鶴岡村興鶴路二段368號","lat":23.5593331,"lng":121.3958327,"group":"2star","detail":"資本額1,000萬｜1995年｜負責人李煥陞","specs":"","hasRel":false},{"name":"錦山企業有限公司","addr":"富里鄉石牌村車站街一段35之2號","lat":23.182703,"lng":121.2516392,"group":"2star","detail":"資本額500萬｜1998年｜負責人邱洪章｜前身全章企業社","specs":"","hasRel":false},{"name":"展信實業有限公司","addr":"玉里鎮大禹里大禹202-4號","lat":23.379573,"lng":121.3253466,"group":"3star","detail":"資本額2,950萬｜1992年｜負責人曾雲嬌｜月均4,000m³｜關係：展信營造","specs":"","hasRel":false},{"name":"利泰工程行","addr":"光復鄉大馬村中華路382號1樓","lat":23.664,"lng":121.425,"group":"1star","detail":"資本額48萬｜1991年｜合夥組織(鄭火榮)","specs":"","hasRel":false},{"name":"鳳勝實業（壽豐廠）","addr":"花蓮縣壽豐鄉月眉路3段72號","lat":23.87,"lng":121.509,"group":"4star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['hualien'] = m;
+  }
+  // 宜蘭
+  maps['yilan'] = null;
+  function initMap_yilan() {
+    if (maps['yilan']) return;
+    const m = L.map('map-yilan', { zoomControl: true }).setView([24.68,121.77], 11);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"台泥宜蘭分廠","addr":"員山鄉蓁巷村員山路二段438號","lat":24.7241679,"lng":121.7104327,"group":"5star","detail":"台泥集團GRMC#109｜1套拌和設備+19車｜廠長：洪崇智","specs":"","hasRel":false},{"name":"潤泰精密材料冬山廠","addr":"冬山鄉安平村大安路357號","lat":24.6223238,"lng":121.7802177,"group":"5star","detail":"潤泰集團｜原力霸水泥冬山廠｜水泥研磨+乾粉砂漿+預拌混凝土","specs":"","hasRel":false},{"name":"宜興預拌混凝土（總部）","addr":"冬山鄉龍德工業區德興六路43號","lat":24.6310386,"lng":121.822414,"group":"4star","detail":"宜蘭最大GRMC#040｜資本額1.72億｜1996年｜負責人:李興和","specs":"","hasRel":true},{"name":"宜興預拌混凝土（冬山二廠）","addr":"冬山鄉德興五路36號","lat":24.6575,"lng":121.788,"group":"4star","detail":"宜興集團二廠｜3套拌和設備｜2003年","specs":"","hasRel":false},{"name":"宜興預拌混凝土（冬山三廠）","addr":"冬山鄉德興六路41~43號","lat":24.6565,"lng":121.7898,"group":"4star","detail":"宜興集團三廠｜2012年","specs":"","hasRel":false},{"name":"宜興預拌混凝土（宜蘭梅洲廠）","addr":"宜蘭市梅洲二路127號","lat":24.754,"lng":121.74,"group":"4star","detail":"宜興集團梅洲廠｜2013年｜宜蘭市北側梅洲工業區","specs":"","hasRel":false},{"name":"久屋預拌混凝土","addr":"冬山鄉龍祥十路19號","lat":24.6278383,"lng":121.8129374,"group":"3star","detail":"資本額8,000萬｜1982年｜負責人:簡志耀｜員工26人","specs":"","hasRel":true},{"name":"立泰預拌混凝土工業","addr":"冬山鄉龍祥十路5號","lat":24.6278383,"lng":121.8129374,"group":"3star","detail":"資本額5,000萬｜1993年｜負責人:楊欣浩｜員工34人｜兼營瀝青混凝土","specs":"","hasRel":true},{"name":"享正實業","addr":"冬山鄉德興一路42號","lat":24.6247967,"lng":121.8211877,"group":"3star","detail":"資本額4,968萬｜1987年｜負責人:林文政｜ISO9002｜2套拌合機+15車","specs":"","hasRel":true},{"name":"得福混凝土工業","addr":"冬山鄉成興路42號","lat":24.6360639,"lng":121.7948693,"group":"3star","detail":"資本額6,000萬｜1979年｜董事長:連志峯｜與福得關聯","specs":"","hasRel":true},{"name":"福得混凝土工業","addr":"宜蘭市梅洲二路97號","lat":24.7805177,"lng":121.7354767,"group":"2star","detail":"資本額4,160萬｜1985年｜董事長:吳智翔｜連志峯為董事","specs":"","hasRel":true},{"name":"禹盛混凝土有限公司","addr":"宜蘭縣三星鄉月眉村星中路157號","lat":24.666,"lng":121.6532,"group":"2star","detail":"資本額待查｜三星鄉預拌廠 | TRMC會員","specs":"","hasRel":false},{"name":"梅洲混凝土工業股份有限公司","addr":"宜蘭縣宜蘭市梅洲二路57號","lat":24.752,"lng":121.7533,"group":"2star","detail":"資本額待查｜宜蘭市梅洲工業區｜宜興集團林贊壽擔任董事長","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['yilan'] = m;
+  }
+  // 北區（台北·新北·基隆）
+  maps['taipei'] = null;
+  function initMap_taipei() {
+    if (maps['taipei']) return;
+    const m = L.map('map-taipei', { zoomControl: true }).setView([25.07,121.56], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（台北港廠）","addr":"八里區商港路128號","lat":25.1499958,"lng":121.3930364,"group":"5star","detail":"國產建材2504｜全台最大預拌集團｜智慧廠","specs":"","hasRel":false},{"name":"國產建材實業（汐止廠）","addr":"汐止區福德二路360號","lat":25.0661912,"lng":121.6338472,"group":"5star","detail":"國產建材｜汐止二廠2024動工｜年產30萬m³","specs":"","hasRel":false},{"name":"國產建材實業（土城廠）","addr":"土城區中華路二段202號","lat":24.9695713,"lng":121.4372831,"group":"5star","detail":"國產建材｜土城廠｜廠長陳丁郎","specs":"","hasRel":false},{"name":"國產建材實業（八里廠）","addr":"八里區龍米路二段221號","lat":25.1585809,"lng":121.4304577,"group":"5star","detail":"國產建材｜八里廠","specs":"","hasRel":false},{"name":"國產建材實業（基隆廠）","addr":"基隆市七堵區八德路2-2號","lat":25.103064,"lng":121.7224644,"group":"5star","detail":"國產建材｜基隆廠｜七堵區八德里","specs":"","hasRel":false},{"name":"亞東預拌混凝土（汐止廠）","addr":"汐止區大同路一段138號","lat":25.0558581,"lng":121.6314672,"group":"5star","detail":"遠東集團/亞泥100%持股｜資本額20億｜全台26廠｜負責人李坤炎","specs":"","hasRel":false},{"name":"亞東預拌混凝土（土城廠）","addr":"土城區中華路二段208號","lat":24.9691936,"lng":121.4373806,"group":"5star","detail":"遠東集團/亞泥｜廠長朱文壽","specs":"","hasRel":false},{"name":"台灣水泥台北水泥製品廠","addr":"汐止區大同路一段310號","lat":25.0580012,"lng":121.6371891,"group":"5star","detail":"台泥集團1101｜資本額1,000億｜廠長陳竹村｜1套拌和設備","specs":"","hasRel":false},{"name":"力泰建設企業（士林廠）","addr":"士林區延平北路七段7號","lat":25.1007798,"lng":121.4902192,"group":"4star","detail":"上柜5520｜資本額7.38億｜負責人吳良材｜北部最大獨立業者","specs":"","hasRel":false},{"name":"力泰建設企業（汐止廠）","addr":"汐止區樟樹二路43號","lat":25.0621481,"lng":121.6396738,"group":"4star","detail":"力泰建設汐止廠","specs":"","hasRel":true},{"name":"幸孚預拌混凝土（土城廠）","addr":"土城區中華路一段162號","lat":24.9835398,"lng":121.4415041,"group":"4star","detail":"幸福水泥關係｜資本額8.8億｜負責人陳韻如｜樹林+五股+汐止+基隆共5廠","specs":"","hasRel":false},{"name":"幸孚預拌混凝土（基隆廠）","addr":"基隆市七堵區八德路2-10號","lat":25.1128261,"lng":121.7276096,"group":"4star","detail":"幸福水泥關係｜基隆七堵","specs":"","hasRel":false},{"name":"信一預拌混凝土","addr":"中正區寶慶路37號8樓","lat":25.041485,"lng":121.5103107,"group":"3star","detail":"資本額1.1億｜1990年｜負責人楊智雄｜信大水泥關係","specs":"","hasRel":false},{"name":"合興預拌混凝土（三峯廠）","addr":"三峯區中正路三段196號","lat":24.9040392,"lng":121.3503511,"group":"3star","detail":"資本額4,500萬｜1992年｜負責人鄧桂英｜GRMC認證","specs":"","hasRel":false},{"name":"大象實業","addr":"汐止區環河街126號","lat":25.0593311,"lng":121.6293336,"group":"3star","detail":"資本額4,189萬｜1995年｜負責人謝英美｜GRMC認證","specs":"","hasRel":false},{"name":"和昌國際工業（汐止廠）","addr":"汐止區保新街133-1號","lat":25.0723776,"lng":121.6859409,"group":"4star","detail":"原台產實業｜和昌國際工業購入｜資本額4.85億｜負責人江程金","specs":"","hasRel":true},{"name":"和昌國際工業（內湖廠）","addr":"內湖區安康路111號","lat":25.062775,"lng":121.598431,"group":"4star","detail":"和昌國際工業｜資本額4.85億｜負責人江程金｜GRMC認證｜汐止廠+觀音廠+楊梅廠","specs":"","hasRel":true},{"name":"陽明混凝土","addr":"金山區南勢湖41號","lat":25.216642,"lng":121.615173,"group":"3star","detail":"資本額2,000萬｜1994年｜負責人郭淑如｜北海岸","specs":"","hasRel":false},{"name":"大漢預拌廠","addr":"泰山區中港南路310號1樓","lat":25.0566066,"lng":121.4380565,"group":"2star","detail":"資本額2,000萬｜1987年｜負責人蔡錦達","specs":"","hasRel":false},{"name":"宥辰興業","addr":"鶯歌區中正三路156巷26號2樓","lat":24.9411175,"lng":121.3384942,"group":"3star","detail":"資本額4億｜2016年｜負責人藍隆寬｜預拌混凝土製造","specs":"","hasRel":true},{"name":"聯興建材工業","addr":"新店區安和路二段146巷30號","lat":24.9719822,"lng":121.5194806,"group":"2star","detail":"獨立｜新店","specs":"","hasRel":false},{"name":"富品混凝土工業","addr":"貢寮區延平街177號","lat":25.0569387,"lng":121.9246477,"group":"2star","detail":"獨立｜東北角","specs":"","hasRel":false},{"name":"松達建材","addr":"汐止區南陽街120巷35號1樓","lat":25.0598359,"lng":121.6230571,"group":"2star","detail":"資本額7,000萬｜白珮妤｜1988年｜預拌混凝土製造","specs":"","hasRel":true},{"name":"龍形企業（八里廠）","addr":"新北市八里區忠八街60號","lat":25.1620004,"lng":121.4196045,"group":"3star","detail":"資本額8,000萬｜1991年｜負責人施阿祥｜ISO-9001｜捷運局合格供應商｜實績：台北港、十三行博物館","specs":"","hasRel":true},{"name":"世芳預拌混凝土有限公司","addr":"新北市樹林區中正路205號","lat":24.9907,"lng":121.4205,"group":"2star","detail":"資本額待查｜樹林區預拌廠 | TRMC會員","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['taipei'] = m;
+  }
+  // 桃園
+  maps['taoyuan'] = null;
+  function initMap_taoyuan() {
+    if (maps['taoyuan']) return;
+    const m = L.map('map-taoyuan', { zoomControl: true }).setView([24.99,121.3], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（林口廠）","addr":"桃園市龜山區樂善里文明路17號","lat":25.0624657,"lng":121.3768616,"group":"5star","detail":"國產建材2504｜全台最大預拌集團｜桃園龜山","specs":"","hasRel":false},{"name":"國產建材實業（蘆竹二廠）","addr":"桃園市蘆竹區內厝里長興路三段277巷10號","lat":25.086,"lng":121.293,"group":"5star","detail":"國產建材｜蘆竹二廠｜1998年設立｜供應青埔/航空城","specs":"","hasRel":false},{"name":"亞東預拌混凝土（桃園廠）","addr":"桃園市蘆竹區興隆街42號","lat":25.042,"lng":121.298,"group":"5star","detail":"遠東集團/亞泥100%｜資本額20億｜桃園區營運總廠｜轄新屋八德分廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（八德廠）","addr":"桃園市八德區興豐路2350巷369號","lat":24.9422293,"lng":121.312636,"group":"5star","detail":"遠東集團/亞泥｜設備 3m³×2｜產能 360m³/hr｜桃園三廠122車","specs":"","hasRel":false},{"name":"亞東預拌混凝土（新屋廠）","addr":"桃園市新屋區鼎鐘路210號","lat":24.969,"lng":121.048,"group":"5star","detail":"遠東集團/亞泥｜設備 3m³×1｜產能 170m³/hr","specs":"","hasRel":false},{"name":"亞東預拌混凝土（林口廠）","addr":"桃園市龜山區大崗里頂湖28號","lat":25.045329,"lng":121.356307,"group":"5star","detail":"遠東集團/亞泥｜GRMC認證","specs":"","hasRel":false},{"name":"台灣水泥（龜山分廠）","addr":"桃園市龜山區龍壽里東萬壽路688號","lat":25.0143535,"lng":121.3925936,"group":"5star","detail":"台泥集團1101｜龜山分廠","specs":"","hasRel":false},{"name":"台灣水泥（桃園二廠）","addr":"桃園市蘆竹區六福路59號","lat":25.0615695,"lng":121.2955674,"group":"5star","detail":"台泥集團｜桃園二廠","specs":"","hasRel":false},{"name":"台灣水泥（桃園分廠）","addr":"桃園市蘆竹區南山路二段220號","lat":25.0556663,"lng":121.2902556,"group":"5star","detail":"台泥集團｜桃園分廠","specs":"","hasRel":false},{"name":"新三亞預拌混凝土廠","addr":"桃園市龍潭區龍源路81號","lat":24.8639321,"lng":121.2099045,"group":"4star","detail":"資本額6,000萬｜1999年｜負責人陳易穰｜GRMC綠混凝土認證｜金石獎｜公共工程9成","specs":"設備 3m³×2｜桃園廠+龍潭廠｜公共工程/廠辦/住宅","hasRel":false},{"name":"慶龍預拌混凝土","addr":"桃園市蘆竹區內溪路自強巷2號","lat":25.039,"lng":121.291,"group":"3star","detail":"資本額1億｜1993年｜負責人楊進連｜GRMC認證｜另設八德廠","specs":"","hasRel":true},{"name":"國普混凝土工業","addr":"桃園市蘆竹區興隆街42號","lat":25.042,"lng":121.298,"group":"3star","detail":"資本額7,800萬｜1987年｜負責人呂湘香｜預拌混凝土/瀝青/骨材","specs":"","hasRel":false},{"name":"國順預拌混凝土（龍華廠）","addr":"桃園市龜山區龍壽里龍校街32巷40號","lat":25.003,"lng":121.353,"group":"3star","detail":"母公司國順預拌資本額2億｜1993年｜負責人劉世翔｜GRMC認證","specs":"","hasRel":true},{"name":"大園預拌混凝土","addr":"桃園市大園區圳頭里後館一路427號","lat":25.0735874,"lng":121.2005532,"group":"3star","detail":"資本額3,600萬｜2003年｜負責人蘇添全","specs":"","hasRel":false},{"name":"慶隆預拌混凝土","addr":"桃園市中壢區普忠路331號","lat":24.9622563,"lng":121.2446157,"group":"3star","detail":"資本額2,988萬｜1996年｜負責人朱瑞爐","specs":"","hasRel":false},{"name":"武雄實業（觀音廠）","addr":"桃園市觀音區草漯里忠孝路645號","lat":25.029,"lng":121.089,"group":"3star","detail":"宜興集團李興和關係｜觀音廠｜GRMC認證","specs":"","hasRel":false},{"name":"慶皇水泥","addr":"桃園市觀音區廣興里保興路一段228號","lat":25.02,"lng":121.106,"group":"3star","detail":"資本額1.2億｜1995年｜預拌混凝土/水泥製品","specs":"","hasRel":false},{"name":"國產建材實業（中壢廠）","addr":"桃園市平鎮區中豐路南勢一段1號","lat":24.946,"lng":121.214,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"和昌國際工業（楊梅廠）","addr":"桃園市楊梅區梅獅路一段157號","lat":24.908,"lng":121.146,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"和昌國際工業（觀音廠）","addr":"桃園市觀音區快速路9段2276巷11號","lat":25.033,"lng":121.077,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"宜興預拌混凝土（楊梅廠）","addr":"桃園市楊梅區永平里梅獅路一段270號","lat":24.908,"lng":121.146,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"幸孚預拌混凝土（埔心廠）","addr":"桃園市楊梅區梅獅路1段191號","lat":24.908,"lng":121.146,"group":"4star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['taoyuan'] = m;
+  }
+  // 新竹·苗栗
+  maps['hsinchu'] = null;
+  function initMap_hsinchu() {
+    if (maps['hsinchu']) return;
+    const m = L.map('map-hsinchu', { zoomControl: true }).setView([24.76,120.96], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（新竹廠）","addr":"新竹市香山區中華路六段646號","lat":24.731176,"lng":120.914507,"group":"5star","detail":"國產建材2504｜全台最大預拌集團｜28座混凝土廠","specs":"","hasRel":false},{"name":"國產建材實業（東大廠）","addr":"新竹市東大路三段110巷30-1號","lat":24.814,"lng":120.935,"group":"5star","detail":"國產建材｜新竹東大廠","specs":"","hasRel":false},{"name":"國產建材實業（竹北廠）","addr":"新竹縣竹北市東興路二段588巷90號","lat":24.836,"lng":121.028,"group":"5star","detail":"國產建材｜竹北廠","specs":"","hasRel":false},{"name":"國產建材實業（苗栗廠）","addr":"苗栗縣銅鑼鄉中平村忠興街2號","lat":24.483,"lng":120.788,"group":"5star","detail":"國產建材｜苗栗廠","specs":"","hasRel":false},{"name":"亞興水泥製品（新竹廠/亞東關係）","addr":"新竹市東大路三段274號","lat":24.814,"lng":120.938,"group":"5star","detail":"遠東集團亞泥100%轉投資｜資本額1億｜負責人金崇仁｜GRMC認證","specs":"竹苗營運處｜竹北廠：竹北市泰和路184號｜電話03-5368405","hasRel":false},{"name":"亞興水泥製品（竹北廠/亞東關係）","addr":"新竹縣竹北市泰和路184號","lat":24.8411766,"lng":121.0050914,"group":"5star","detail":"遠東集團亞泥｜亞東預拌竹苗區｜負責人鍾政宗｜1988年設立","specs":"","hasRel":false},{"name":"台灣水泥（新竹分廠）","addr":"新竹縣竹北市博愛街792號","lat":24.844,"lng":121.019,"group":"5star","detail":"台泥集團1101｜新竹分廠｜GRMC認證#107｜360m³/hr｜32車","specs":"","hasRel":false},{"name":"永炬企業","addr":"新竹縣竹東鎮仁愛里北岸6號","lat":24.736,"lng":121.081,"group":"4star","detail":"資本額2億(實收1.25億)｜1981年｜負責人羅煥綺｜羅家家族｜GRMC認證｜ISO9001","specs":"設備 400m³/hr｜另設楊梅廠｜砂石/預拌/瀝青｜竹東龍頭","hasRel":true},{"name":"環球混凝土（新竹廠/環泥子公司）","addr":"新竹縣竹東鎮員山路435巷18號","lat":24.783822,"lng":121.0438108,"group":"4star","detail":"環球水泥(環泥)子公司｜資本額1.32億｜預拌/砂石/水泥製品","specs":"","hasRel":false},{"name":"國順預拌混凝土（新竹廠）","addr":"新竹市東區中華路一段1巷26-1號","lat":24.798,"lng":120.976,"group":"3star","detail":"母公司資本額3億(實收2億)｜1993年｜負責人劉世翔｜GRMC認證｜ISO9001","specs":"180m³/hr｜4廠(新竹/竹南/苗栗/龍華)｜供應捷運萬大線/桃園綠線","hasRel":true},{"name":"國順預拌混凝土（竹南廠）","addr":"苗栗縣竹南鎮仁愛路1633號","lat":24.69,"lng":120.877,"group":"3star","detail":"國順預拌關係企業｜GRMC認證","specs":"","hasRel":true},{"name":"國順預拌混凝土（苗栗廠）","addr":"苗栗縣銅鑼鄉中平村中興路18-1號","lat":24.494,"lng":120.795,"group":"3star","detail":"國順預拌關係企業｜GRMC認證","specs":"","hasRel":true},{"name":"永協企業","addr":"新竹縣湖口鄉成功路910號","lat":24.902,"lng":121.047,"group":"3star","detail":"資本額1億(實收4,500萬)｜1993年｜負責人謝焸麒｜GRMC認證#136｜湖口在地廠","specs":"","hasRel":true},{"name":"毅和實業（寶山廠）","addr":"新竹縣寶山鄉雙溪村三峰路二段385號","lat":24.76,"lng":121.022,"group":"3star","detail":"資本額8,020萬｜1993年｜負責人黃伶｜3廠(寶山/港墘/大厝)｜碳足跡認證","specs":"供應台積電竹科/竹南廠｜麗明營造/達欣工程合作","hasRel":true},{"name":"毅和實業（竹南港墘廠）","addr":"苗栗縣竹南鎮港仔墘29-12號","lat":24.687,"lng":120.88,"group":"3star","detail":"毅和實業｜竹南港墘廠","specs":"","hasRel":true},{"name":"錦鋒混凝土","addr":"苗栗縣後龍鎮龍坑里十班坑171-7號","lat":24.618,"lng":120.787,"group":"2star","detail":"資本額3,850萬｜1986年｜負責人林登倫","specs":"","hasRel":true},{"name":"協鑫混凝土","addr":"苗栗縣大湖鄉富興村八寮灣25-15號","lat":24.421,"lng":120.868,"group":"2star","detail":"資本額4,000萬｜2007年｜負責人賴柊源","specs":"","hasRel":true},{"name":"福宏實業","addr":"苗栗縣銅鑼鄉中平村七十份101號","lat":24.478,"lng":120.787,"group":"2star","detail":"資本額2,500萬｜1979年｜負責人張煥林","specs":"","hasRel":true},{"name":"頭份混凝土有限公司","addr":"苗栗縣苗栗市文聖里文山231之2號","lat":24.5615,"lng":120.8192,"group":"2star","detail":"資本額待查｜苗栗市預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"毅和實業（大厝廠）","addr":"苗栗縣竹南鎮真和路253巷26號","lat":24.686,"lng":120.872,"group":"3star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['hsinchu'] = m;
+  }
+  // 台中·彰化
+  maps['taichung'] = null;
+  function initMap_taichung() {
+    if (maps['taichung']) return;
+    const m = L.map('map-taichung', { zoomControl: true }).setView([24.13,120.58], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（台中廠）","addr":"臺中市南屯區寶山里工業區二十一路1號","lat":24.149,"lng":120.581,"group":"5star","detail":"國產建材2504｜台中廠｜負責人趙子敏","specs":"","hasRel":false},{"name":"亞東預拌混凝土（台中廠/遠東關係）","addr":"臺中市西屯區協和里工業區三五路38號","lat":24.151,"lng":120.589,"group":"5star","detail":"遠東集團亞泥100%轉投資｜資本額20億｜負責人李坤炎｜台中廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（大里廠）","addr":"412台中市大里區環河路一段470號","lat":24.0925,"lng":120.6471,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜中區營運處｜大里廠｜GRMC認證","specs":"","hasRel":false},{"name":"亞東預拌混凝土（烏日廠）","addr":"414台中市烏日區溪南路三段418巷210號","lat":24.0483,"lng":120.6523,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜中區營運處｜烏日廠｜GRMC認證","specs":"","hasRel":false},{"name":"亞東預拌混凝土（潭子廠）","addr":"台中市潭子區環中路一段3號","lat":24.2009,"lng":120.7029,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜中區營運處｜潭子廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（霧峰廠）","addr":"台中市霧峰區中投西路2段540號","lat":24.0761,"lng":120.6635,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜中區營運處｜霧峰廠","specs":"","hasRel":false},{"name":"台灣水泥（台中水泥製品廠）","addr":"臺中市大雅區中清路三段785號","lat":24.213212,"lng":120.649157,"group":"5star","detail":"台泥集團1101｜台中廠｜1978年設立｜綠色工廠認證｜ISO50001｜低碳混凝土","specs":"","hasRel":false},{"name":"環球混凝土（烏日廠/環泥子公司）","addr":"臺中市烏日區中山路一段665號","lat":24.104,"lng":120.632,"group":"4star","detail":"環球水泥(環泥)子公司｜GRMC認證｜供應中部科學園區","specs":"","hasRel":false},{"name":"興威股份有限公司","addr":"臺中市南屯區寶山里工業區二十一路56號","lat":24.149,"lng":120.582,"group":"4star","detail":"資本額1.91億｜1993年｜負責人顏子芳｜GRMC認證｜台中在地指標廠","specs":"","hasRel":false},{"name":"廣達混凝土股份有限公司","addr":"臺中市南屯區工業區二十路20號","lat":24.15,"lng":120.58,"group":"3star","detail":"資本額6,000萬｜1987年｜負責人羅國源｜台中工業區","specs":"","hasRel":true},{"name":"中來工業股份有限公司","addr":"臺中市大里區環河路一段188號","lat":24.104,"lng":120.689,"group":"3star","detail":"資本額1.2億｜1987年｜負責人｜大里廠｜供應屯區","specs":"","hasRel":true},{"name":"長生預拌混凝土（烏日廠）","addr":"臺中市烏日區榮泉里中山路三段1335巷57之1號","lat":24.088,"lng":120.615,"group":"3star","detail":"資本額1.33億｜1987年｜負責人鍾雲城｜GRMC認證","specs":"","hasRel":true},{"name":"福鹿預拌混凝土","addr":"彰化縣鹿港鎮東石里鹿工南二路22號","lat":24.065,"lng":120.432,"group":"3star","detail":"資本額7,800萬｜1991年｜負責人黃周秀鶴｜鹿港彰濱工業區","specs":"","hasRel":true},{"name":"久連預拌混凝土","addr":"彰化縣福興鄉福興村福三路四段401號1樓","lat":24.033,"lng":120.433,"group":"3star","detail":"資本額｜負責人梁國斌｜鹿港福興區","specs":"","hasRel":true},{"name":"裕山混凝土","addr":"彰化縣","lat":24.07,"lng":120.48,"group":"3star","detail":"彰化在地廠商（資料整理中）","specs":"","hasRel":true},{"name":"全富混凝土工業","addr":"臺中市潭子區中山路一段309號","lat":24.211,"lng":120.698,"group":"2star","detail":"潭子廠｜中部區域供應","specs":"","hasRel":true},{"name":"佳生砂石企業","addr":"臺中市大雅區昌平路三段620巷29號","lat":24.231,"lng":120.635,"group":"2star","detail":"砂石/預拌混凝土｜大雅廠","specs":"","hasRel":true},{"name":"伸太田工業","addr":"臺中市神岡區溪洲路202號","lat":24.273,"lng":120.67,"group":"2star","detail":"神岡廠｜中部區域供應","specs":"","hasRel":true},{"name":"豐崗實業","addr":"臺中市后里區堤防路2號","lat":24.306,"lng":120.72,"group":"2star","detail":"后里廠｜中部區域供應","specs":"","hasRel":true},{"name":"甲東洋土","addr":"臺中市西屯區大河里甘河路69號","lat":24.182,"lng":120.651,"group":"1star","detail":"西屯廠｜預拌混凝土","specs":"","hasRel":true},{"name":"民峰實業股份有限公司梧棲預拌混凝土廠","addr":"台中市梧棲區臨港路二段210號","lat":24.2549,"lng":120.5316,"group":"3star","detail":"民峰集團｜梧棲預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"野馬預拌混凝土有限公司","addr":"台中市龍井區臨港路一段880巷18號","lat":24.1927,"lng":120.5458,"group":"2star","detail":"資本額待查｜龍井區預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"埔塩預拌混凝土股份有限公司埔鹽廠","addr":"彰化縣埔鹽鄉埔港路63-4號","lat":24.0001,"lng":120.4636,"group":"2star","detail":"資本額待查｜埔鹽鄉預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"有駿預拌混凝土股份有限公司","addr":"彰化縣埤頭鄉彰水路四段468巷10號","lat":23.8914,"lng":120.4622,"group":"2star","detail":"資本額待查｜埤頭鄉預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"台灣水泥（大肚分廠）","addr":"台中市大肚區沙田路二段303號","lat":24.153,"lng":120.543,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"興威股份有限公司（太平廠）","addr":"台中市太平區光興路327號","lat":24.129,"lng":120.721,"group":"4star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['taichung'] = m;
+  }
+  // 雲林·嘉義·南投
+  maps['yunlin'] = null;
+  function initMap_yunlin() {
+    if (maps['yunlin']) return;
+    const m = L.map('map-yunlin', { zoomControl: true }).setView([23.6,120.5], 9);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（嘉太廠）","addr":"嘉義縣太保市北港路二段91號","lat":23.465,"lng":120.32,"group":"5star","detail":"國產建材(2504)｜嘉太廠｜負責人陳以益","specs":"","hasRel":false},{"name":"國產建材實業（嘉義廠）","addr":"嘉義縣民雄鄉北斗村中山路50號","lat":23.555,"lng":120.43,"group":"5star","detail":"國產建材(2504)｜嘉義廠｜負責人陳以益","specs":"","hasRel":false},{"name":"國產建材實業（斗南廠）","addr":"雲林縣斗南鎮小東里公論路23號","lat":23.689,"lng":120.465,"group":"5star","detail":"國產建材(2504)｜斗南廠｜負責人吳國彰","specs":"","hasRel":false},{"name":"亞東預拌混凝土（雲林廠）","addr":"雲林縣虎尾鎮光明路73巷3-1號","lat":23.708,"lng":120.437,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜雲林廠｜中區營運","specs":"","hasRel":false},{"name":"亞東預拌混凝土（布袋廠）","addr":"嘉義縣布袋鎮太平東路21巷1號","lat":23.376,"lng":120.155,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜布袋廠｜嘉義區","specs":"","hasRel":false},{"name":"興威股份有限公司（草屯廠）","addr":"南投縣草屯鎮碧洲里草溪路73號","lat":23.985,"lng":120.685,"group":"4star","detail":"興農集團轉投資｜資本額1.91億｜GRMC認證#090｜草屯廠20車｜烏溪鳥嘴潭/八卦山隧道","specs":"","hasRel":false},{"name":"泉溢開發有限公司（朴子廠）","addr":"嘉義縣朴子市工業區三街57號","lat":23.462,"lng":120.249,"group":"3star","detail":"嘉義在地主要廠商｜供應嘉義海線","specs":"","hasRel":true},{"name":"承慶企業（山慶瀝青）","addr":"嘉義縣水上鄉中義路150號","lat":23.418,"lng":120.393,"group":"3star","detail":"水上廠｜預拌混凝土+瀝青混凝土","specs":"","hasRel":true},{"name":"煜昌工業","addr":"嘉義縣布袋鎮太平東路21巷1號","lat":23.375,"lng":120.154,"group":"3star","detail":"布袋廠｜預拌混凝土+水泥製品","specs":"","hasRel":true},{"name":"德欣先進","addr":"雲林縣斗六市萬年路700號","lat":23.722,"lng":120.557,"group":"3star","detail":"預拌+預鑄水泥製品｜斗六供應中南部","specs":"","hasRel":true},{"name":"益昌砂石企業","addr":"南投縣竹山鎮中和里前山路二段398號","lat":23.756,"lng":120.689,"group":"3star","detail":"GRMC認證合格｜竹山廠｜供應南投濁水線","specs":"","hasRel":true},{"name":"義展實業","addr":"南投縣埔里鎮大城里南環路899巷97號","lat":23.959,"lng":120.968,"group":"3star","detail":"埔里廠｜南投縣預拌公會會址｜供應埔里/魚池/國姓","specs":"","hasRel":true},{"name":"宏益達建材企業","addr":"嘉義縣梅山鄉工業一路38之6號","lat":23.59,"lng":120.555,"group":"3star","detail":"梅山工業區｜嘉義山線供應","specs":"","hasRel":true},{"name":"宏進建材","addr":"嘉義縣太保市嘉太工業區中興路2號","lat":23.468,"lng":120.318,"group":"2star","detail":"嘉太工業區｜預拌混凝土製造","specs":"","hasRel":true},{"name":"天源預拌混凝土","addr":"雲林縣斗六市石榴路369巷101號","lat":23.715,"lng":120.578,"group":"2star","detail":"斗六石榴班廠｜雲林在地供應","specs":"","hasRel":false},{"name":"任建企業","addr":"嘉義縣民雄鄉大崎村頂埤仔1之1號","lat":23.543,"lng":120.45,"group":"2star","detail":"民雄大崎村｜預拌混凝土","specs":"","hasRel":true},{"name":"源順預拌混凝土","addr":"南投縣竹山鎮德興里坑巷32之1號","lat":23.728,"lng":120.662,"group":"1star","detail":"竹山在地小型廠","specs":"","hasRel":false},{"name":"聯成預拌混凝土","addr":"雲林縣台西鄉公館29號","lat":23.712,"lng":120.198,"group":"1star","detail":"台西廠｜雲林沿海供應","specs":"","hasRel":true},{"name":"盛記預拌混凝土有限公司","addr":"雲林縣斗六市石寮路2之12號","lat":23.7051,"lng":120.5373,"group":"2star","detail":"資本額待查｜斗六市預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"台灣水泥（嘉義分廠）","addr":"嘉義縣民雄鄉北斗村新生街8號","lat":23.552,"lng":120.432,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"鳳勝實業（西螺廠）","addr":"雲林縣二崙鄉油車村山子門41號","lat":23.771,"lng":120.415,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"鳳勝實業（嘉泰廠）","addr":"嘉義縣太保市北港路二段105巷45號","lat":23.464,"lng":120.332,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"鳳勝實業（朴子廠）","addr":"嘉義縣朴子市朴子工業區一街16號","lat":23.464,"lng":120.247,"group":"4star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['yunlin'] = m;
+  }
+  // 台南
+  maps['tainan'] = null;
+  function initMap_tainan() {
+    if (maps['tainan']) return;
+    const m = L.map('map-tainan', { zoomControl: true }).setView([23.05,120.25], 9);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（台南廠）","addr":"台南市永康區洲尾街62號","lat":23.023,"lng":120.25,"group":"5star","detail":"國產建材(2504)｜台南廠｜負責人楊坪林","specs":"","hasRel":false},{"name":"亞東預拌混凝土（台南廠）","addr":"台南市南區新平路27號","lat":22.97,"lng":120.18,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜台南廠｜南區營運","specs":"","hasRel":false},{"name":"亞東預拌混凝土（永康廠）","addr":"710台南市永康區三民里和平東路58號","lat":23.0551,"lng":120.2635,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜嘉南區營運處｜永康廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（仁德廠）","addr":"台南市仁德區義林路70號","lat":22.9632,"lng":120.2627,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜嘉南區營運處｜仁德廠（原太固實業廠址）","specs":"","hasRel":false},{"name":"亞東預拌混凝土（新營廠）","addr":"台南市新營區八德路3號","lat":23.305,"lng":120.317,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜新營廠｜溪北營運","specs":"","hasRel":false},{"name":"台灣水泥（高雄水泥製品廠善化分廠）","addr":"台南市善化區興農路33號","lat":23.13,"lng":120.3,"group":"5star","detail":"台泥(1101)｜善化分廠｜GRMC認證#097｜180m³/h","specs":"","hasRel":false},{"name":"環球水泥（台南預拌混凝土場）","addr":"台南市南區中華西路一段59號","lat":22.977,"lng":120.178,"group":"4star","detail":"環球水泥(環泥)子公司｜台南廠","specs":"","hasRel":false},{"name":"名人預拌混凝土","addr":"台南市新市區中山路183號","lat":23.073,"lng":120.297,"group":"3star","detail":"1995年｜GRMC認證｜全品項綠建材｜遠雄/中鼎/寶佳合作","specs":"","hasRel":true},{"name":"太固實業","addr":"台南市仁德區義林路70號","lat":22.97,"lng":120.253,"group":"3star","detail":"仁德廠｜供應大台南地區","specs":"","hasRel":true},{"name":"竑榮實業","addr":"台南市官田區二鎮里工業南路20號","lat":23.18,"lng":120.322,"group":"3star","detail":"官田工業區｜預拌混凝土+水泥製品","specs":"","hasRel":true},{"name":"豐旗實業","addr":"台南市麻豆區麻豆口10之2號","lat":23.184,"lng":120.254,"group":"2star","detail":"麻豆廠｜供應台南溪北地區","specs":"","hasRel":true},{"name":"丁丁有限公司預拌混凝土廠","addr":"台南市玉井區工業街266號","lat":23.1222,"lng":120.4574,"group":"2star","detail":"資本額待查｜玉井區預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"安筑混凝土有限公司","addr":"台南市新營區嘉芳里八德路三號","lat":23.3087,"lng":120.317,"group":"2star","detail":"資本額待查｜新營區預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"玉楠混凝土企業股份有限公司楠西廠","addr":"台南市楠西區鹿田里鹿陶洋1號","lat":23.1738,"lng":120.4876,"group":"2star","detail":"資本額待查｜楠西區預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"國產建材實業（仁德廠）","addr":"台南市仁德區義林路138號","lat":22.978,"lng":120.251,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"國產建材實業（新市廠）","addr":"台南市善化區小新里小新營461號","lat":23.132,"lng":120.303,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"台灣水泥（台南分廠）","addr":"台南市仁德區太乙七街36號","lat":22.978,"lng":120.251,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"台灣水泥（安平分廠）","addr":"台南市南區新樂路84-2號","lat":22.972,"lng":120.193,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"鳳勝實業（仁德廠）","addr":"台南市仁德區勝利路227號","lat":22.978,"lng":120.251,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"鳳勝實業（新營廠）","addr":"台南市新營區東山路158號","lat":23.31,"lng":120.317,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"環球水泥（永康預拌廠）","addr":"台南市永康區興工路20號","lat":23.027,"lng":120.26,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"環球水泥（麻豆預拌廠）","addr":"台南市麻豆區麻工一路377號","lat":23.186,"lng":120.245,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"竑榮實業（安定廠）","addr":"台南市安定區許中營24之11號","lat":23.104,"lng":120.237,"group":"3star","detail":"竑榮實業關係企業｜安定廠","specs":"","hasRel":true}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['tainan'] = m;
+  }
+  // 高雄
+  maps['kaohsiung'] = null;
+  function initMap_kaohsiung() {
+    if (maps['kaohsiung']) return;
+    const m = L.map('map-kaohsiung', { zoomControl: true }).setView([22.65,120.35], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"國產建材實業（仁武廠）","addr":"高雄市仁武區竹後里竹工三巷59號","lat":22.695,"lng":120.349,"group":"5star","detail":"國產建材(2504)｜仁武廠","specs":"","hasRel":false},{"name":"國產建材實業（鳳山廠）","addr":"高雄市大寮區江山里江山路81號","lat":22.604,"lng":120.391,"group":"5star","detail":"國產建材(2504)｜鳳山廠｜負責人潘建男","specs":"","hasRel":false},{"name":"亞東預拌混凝土（高雄廠）","addr":"高雄市大寮區永芳里萬丹路372號","lat":22.597,"lng":120.396,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜高雄廠｜高屏區營運處","specs":"","hasRel":false},{"name":"亞東預拌混凝土（大順廠）","addr":"高雄市三民區民族一路556巷99號","lat":22.652,"lng":120.308,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜大順廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（小港廠）","addr":"806高雄市前鎮區金福路10號","lat":22.5745,"lng":120.33,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜高屏區營運處｜小港廠","specs":"","hasRel":false},{"name":"亞東預拌混凝土（仁武廠）","addr":"81465高雄市仁武區鳳仁路322號","lat":22.7092,"lng":120.34,"group":"5star","detail":"亞東預拌(遠東/亞泥)｜高屏區營運處｜仁武廠","specs":"","hasRel":false},{"name":"台灣水泥（高雄水泥製品廠）","addr":"高雄市仁武區工業一路16號","lat":22.695,"lng":120.352,"group":"5star","detail":"台泥(1101)｜仁武廠｜GRMC認證#011｜楠梓分廠另含2套拌合設備2500m³/日","specs":"","hasRel":false},{"name":"環球水泥（鳳山預拌混凝土場）","addr":"高雄市大寮區中庄里鳳屏一路146號","lat":22.613,"lng":120.396,"group":"4star","detail":"環球水泥(環泥)子公司｜鳳山廠","specs":"","hasRel":false},{"name":"鳳勝實業（仁武廠/總公司）","addr":"高雄市仁武區鳳仁路294號","lat":22.692,"lng":120.35,"group":"4star","detail":"鳳勝實業｜資本額6億｜台泥+官田鋼鐵股東｜全台11預拌廠+2砂石廠","specs":"","hasRel":false},{"name":"高屏預拌混凝土有限公司","addr":"高雄市美濃區自強街一段630號","lat":22.8979,"lng":120.5415,"group":"2star","detail":"資本額待查｜美濃區預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"國產建材實業（小港廠）","addr":"高雄市小港區永春街11號","lat":22.565,"lng":120.35,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"國產建材實業（高雄廠）","addr":"高雄市左營區民族一路930-1號","lat":22.682,"lng":120.295,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"國產建材實業（岡山廠）","addr":"高雄市岡山區本洲路180號","lat":22.796,"lng":120.295,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"台灣水泥（小港分廠）","addr":"高雄市小港區中林路12號","lat":22.565,"lng":120.35,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"台灣水泥（仁武分廠）","addr":"高雄市仁武區工業一路16號","lat":22.702,"lng":120.35,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"台灣水泥（路竹分廠）","addr":"高雄市路竹區大仁路809號","lat":22.857,"lng":120.26,"group":"5star","detail":"","specs":"","hasRel":false},{"name":"環球水泥（小港預拌廠）","addr":"高雄市小港區沿海三路20號","lat":22.565,"lng":120.35,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"環球水泥（大湖預拌廠）","addr":"高雄市路竹區環球路461之1號","lat":22.857,"lng":120.26,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"環球水泥（楠梓預拌廠）","addr":"高雄市燕巢區鳳龍巷58號","lat":22.793,"lng":120.361,"group":"4star","detail":"","specs":"","hasRel":false},{"name":"竑榮實業（高雄廠）","addr":"高雄市大社區旗楠路80巷210號","lat":22.737,"lng":120.354,"group":"3star","detail":"竑榮實業關係企業｜高雄廠","specs":"","hasRel":true},{"name":"竑榮實業（仁武廠）","addr":"高雄市仁武區工業二路11號","lat":22.702,"lng":120.35,"group":"3star","detail":"竑榮實業關係企業｜仁武廠","specs":"","hasRel":true}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['kaohsiung'] = m;
+  }
+  // 屏東
+  maps['pingtung'] = null;
+  function initMap_pingtung() {
+    if (maps['pingtung']) return;
+    const m = L.map('map-pingtung', { zoomControl: true }).setView([22.55,120.55], 10);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"鳳勝實業（屏東廠）","addr":"屏東縣屏東市橋南里工業五路8號","lat":22.656,"lng":120.51,"group":"4star","detail":"鳳勝實業｜屏東廠｜供應屏東市區","specs":"","hasRel":false},{"name":"鳳勝實業（高樹廠）","addr":"屏東縣高樹鄉新南村興店路2號","lat":22.785,"lng":120.598,"group":"3star","detail":"鳳勝實業｜高樹廠｜屏東北區供應","specs":"","hasRel":false},{"name":"鳳勝實業（佳冬廠）","addr":"屏東縣枋寮鄉東海村研發路85號","lat":22.365,"lng":120.588,"group":"2star","detail":"鳳勝實業｜佳冬廠(枋寮)｜屏東南區/墾丁半島供應","specs":"","hasRel":false},{"name":"鳳勝實業（恆春廠）","addr":"屏東縣車城鄉福興村中山路1號","lat":22.08,"lng":120.713,"group":"1star","detail":"鳳勝實業｜恆春廠｜墾丁/恆春半島供應","specs":"","hasRel":false},{"name":"城夆預拌混凝土有限公司九如廠","addr":"屏東縣九如鄉九如路二段1巷2號","lat":22.7398,"lng":120.4901,"group":"2star","detail":"資本額待查｜九如鄉預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"超群混凝土工業股份有限公司內埔廠","addr":"屏東縣內埔鄉豐田村建富路7號","lat":22.612,"lng":120.5669,"group":"2star","detail":"資本額待查｜內埔鄉預拌廠 | TRMC會員","specs":"","hasRel":true},{"name":"環球水泥（潮州預拌廠）","addr":"屏東縣潮州鎮光復路一段53號","lat":22.551,"lng":120.543,"group":"4star","detail":"","specs":"","hasRel":false}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['pingtung'] = m;
+  }
+  // 台東
+  maps['taitung'] = null;
+  function initMap_taitung() {
+    if (maps['taitung']) return;
+    const m = L.map('map-taitung', { zoomControl: true }).setView([22.85,121.08], 9);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OSM', maxZoom: 18 });
+    const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', { attribution: 'NLSC', maxZoom: 18 });
+    nlsc.addTo(m);
+    L.control.layers({ 'NLSC':nlsc, 'OSM':osm }, null, { position:'topleft' }).addTo(m);
+    const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
+    const scaleLabels = {'5star':'全國性大廠','4star':'在地龍頭','3star':'中型廠','2star':'小型廠','1star':'微型'};
+    const markers = [{"name":"佛育企業","addr":"台東市吉林路一段1266號","lat":22.7779,"lng":121.1696,"group":"2star","detail":"資本額1,000萬｜1994年｜負責人吳康源｜預拌混凝土製造","specs":"","hasRel":true},{"name":"本上企業","addr":"台東市中興路四段2巷135號","lat":22.7742,"lng":121.0966,"group":"2star","detail":"資本額500萬｜1994年｜負責人莊玉葉｜花東逾30年專業預拌廠｜砂石/水泥/混凝土","specs":"","hasRel":true},{"name":"延昌混凝土","addr":"台東市中興路四段133巷9弄90號","lat":22.774,"lng":121.0955,"group":"2star","detail":"資本額2,000萬｜1993年｜負責人林昱廷｜預拌混凝土/水泥製品/土石採取","specs":"","hasRel":true},{"name":"陽宸企業","addr":"台東市中興路四段2巷165號","lat":22.7742,"lng":121.0968,"group":"2star","detail":"資本額2,400萬｜2006年｜負責人陳俊良｜預拌混凝土/水泥製品/土石採取","specs":"","hasRel":true},{"name":"瑞晟砂石","addr":"台東市中華路四段998巷360號","lat":22.718,"lng":121.098,"group":"2star","detail":"資本額2,000萬｜2006年｜負責人張美玉｜砂石/預拌混凝土｜填土工程承攬","specs":"","hasRel":true},{"name":"志昇預拌混凝土","addr":"關山鎮順興路27之2號","lat":23.0566,"lng":121.1709,"group":"2star","detail":"資本額2,900萬｜1995年｜負責人黃榮鴻｜電腦全自動控制｜關山/池上/南橫供應","specs":"設備 電腦全自動拌和｜標準地磅｜服務台東關山池上","hasRel":true},{"name":"鹿原砂石場","addr":"鹿野鄉中華路三段60巷9號","lat":22.9396,"lng":121.1427,"group":"1star","detail":"資本額200萬｜1999年｜負責人戴昕恩｜砂石/預拌混凝土","specs":"","hasRel":true},{"name":"久明企業","addr":"大武鄉大竹村愛國蒲路74號","lat":22.4557,"lng":120.9247,"group":"1star","detail":"資本額1,000萬｜1997年｜負責人林建平｜預拌混凝土/土石採取｜南迴線供應","specs":"","hasRel":true},{"name":"綠寶實業","addr":"台東市蘭州街88號1樓","lat":22.7706,"lng":121.1241,"group":"1star","detail":"資本額500萬｜2024年新設｜負責人張家瑜｜預拌混凝土製造","specs":"","hasRel":true},{"name":"尚聖營造","addr":"綠島鄉南寮路102之6號","lat":22.6593,"lng":121.4756,"group":"1star","detail":"丙等營造｜預拌混凝土製造｜綠島在地供應｜負責人張宏彬","specs":"","hasRel":true}];
+    markers.forEach(d => {
+      const color = colors[d.group] || '#95a5a6';
+      const icon = L.divIcon({
+        className: '', html: '<div style="width:16px;height:16px;background:'+color+';border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4)"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      const marker = L.marker([d.lat, d.lng], {icon}).addTo(m);
+      const detailHtml = '<div class="popup-content"><div class="p-name">'+d.name+'</div>' +
+        (d.detail ? '<div class="p-detail">'+d.detail+'</div>' : '') +
+        (d.specs ? '<div class="p-specs">'+d.specs+'</div>' : '') +
+        (d.hasRel ? '<div class="p-rel-title">📊 有董監事關係圖譜</div>' : '') +
+        '</div>';
+      marker.bindPopup(detailHtml);
+    });
+    maps['taitung'] = m;
+  }
+
+// Initial load
+switchRegion('taipei');
+</script>
+</body>
+</html>
