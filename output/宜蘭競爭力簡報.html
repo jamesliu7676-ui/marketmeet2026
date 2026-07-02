@@ -276,7 +276,6 @@ function goto(n) {
   document.getElementById('progress').style.width = (n/totalSlides*100)+'%';
   document.getElementById('section-tag').textContent = sections[n-1];
   document.getElementById('pageInfo').textContent = n+' / '+totalSlides;
-  lazyCharts(n);
   lazyGraphs(n);
   if (n===3) setTimeout(()=>map.invalidateSize(), 100);
 }
