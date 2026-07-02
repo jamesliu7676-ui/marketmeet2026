@@ -298,7 +298,7 @@ document.getElementById('deck').addEventListener('click', e => {
 
 // ====== MAP ======
 const map = L.map('map', { zoomControl: true }).setView([24.68, 121.77], 11);
-const osm = const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
 });
 const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
