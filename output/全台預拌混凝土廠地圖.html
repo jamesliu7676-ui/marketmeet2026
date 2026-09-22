@@ -25,6 +25,10 @@ body { font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif; overflow:hidd
 #header select option { background:#1a3a5c; color:white; }
 #header .info { font-size:12px; color:rgba(255,255,255,0.6); }
 #map { height:calc(100vh - 46px); width:100%; }
+.leaflet-tile-pane {
+  filter:grayscale(92%) saturate(22%) brightness(1.06) contrast(0.86);
+}
+.leaflet-control-layers { color:#405064; }
 .legend {
   background:white; padding:12px; border-radius:6px;
   box-shadow:0 1px 5px rgba(0,0,0,0.3);
@@ -73,14 +77,21 @@ body { font-family:'Noto Sans TC','Microsoft JhengHei',sans-serif; overflow:hidd
 
 <script>
 const map = L.map('map', { zoomControl: true }).setView([23.8, 121.0], 8);
+const lightGray = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+  attribution:'Tiles &copy; Esri', maxZoom: 16
+});
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '&copy; OpenStreetMap contributors', maxZoom: 18
 });
 const nlsc = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/EMAP/default/GoogleMapsCompatible/{z}/{y}/{x}', {
   attribution:'國土測繪圖資服務雲', maxZoom: 18
 });
-nlsc.addTo(map);
-L.control.layers({ '國土測繪圖資（精確）':nlsc, 'OpenStreetMap':osm }, null, { position:'topleft' }).addTo(map);
+lightGray.addTo(map);
+L.control.layers({
+  '淡色簡約底圖':lightGray,
+  '國土測繪圖資（淡化）':nlsc,
+  'OpenStreetMap（淡化）':osm
+}, null, { position:'topleft' }).addTo(map);
 
 
 const colors = { '5star':'#e74c3c','4star':'#e67e22','3star':'#f1c40f','2star':'#3498db','1star':'#95a5a6' };
@@ -757,6 +768,76 @@ function initGraph(containerId, r) {
 let currentRegion = 'all';
 let markerLayer = L.layerGroup().addTo(map);
 let graphCleanups = {};
+let regionBoundaryLayer = null;
+
+map.createPane('regionPane');
+map.getPane('regionPane').style.zIndex = 350;
+
+const countyRegionMap = {
+  '台北市':'taipei', '新北市':'taipei', '基隆市':'taipei',
+  '桃園市':'taoyuan', '桃園縣':'taoyuan',
+  '新竹市':'hsinchu', '新竹縣':'hsinchu', '苗栗縣':'hsinchu',
+  '台中市':'taichung', '彰化縣':'taichung',
+  '雲林縣':'yunlin', '嘉義市':'yunlin', '嘉義縣':'yunlin', '南投縣':'yunlin',
+  '台南市':'tainan', '高雄市':'kaohsiung', '屏東縣':'pingtung',
+  '台東縣':'taitung', '花蓮縣':'hualien', '宜蘭縣':'yilan'
+};
+
+function normalizeCountyName(name) {
+  return String(name || '').replace(/臺/g, '台');
+}
+
+function boundaryStyle(feature) {
+  const countyName = normalizeCountyName(feature.properties.COUNTYNAME || feature.properties.name);
+  const regionKey = countyRegionMap[countyName];
+  const isSelected = currentRegion !== 'all' && regionKey === currentRegion;
+  return {
+    pane:'regionPane',
+    color:isSelected ? '#173858' : '#8e9baa',
+    weight:isSelected ? 2.4 : 0.8,
+    opacity:isSelected ? 0.95 : 0.42,
+    fillColor:isSelected ? '#294f73' : '#dfe5eb',
+    fillOpacity:isSelected ? 0.34 : 0.035
+  };
+}
+
+function refreshRegionBoundaries() {
+  if (regionBoundaryLayer) regionBoundaryLayer.setStyle(boundaryStyle);
+}
+
+function loadRegionBoundaries() {
+  fetch('https://raw.githubusercontent.com/g0v/twgeojson/master/json/twCounty2010.geo.json')
+    .then(response => {
+      if (!response.ok) throw new Error('行政區界線載入失敗');
+      return response.json();
+    })
+    .then(geojson => {
+      regionBoundaryLayer = L.geoJSON(geojson, {
+        pane:'regionPane',
+        style:boundaryStyle,
+        onEachFeature:(feature, layer) => {
+          const countyName = normalizeCountyName(feature.properties.COUNTYNAME || feature.properties.name);
+          const regionKey = countyRegionMap[countyName];
+          layer.bindTooltip(countyName, {sticky:true, direction:'center', opacity:0.88});
+          if (!regionKey) return;
+          layer.on({
+            click:() => {
+              const select = document.getElementById('regionSelect');
+              select.value = regionKey;
+              select.dispatchEvent(new Event('change'));
+            },
+            mouseover:e => {
+              if (currentRegion === 'all' || regionKey !== currentRegion) {
+                e.target.setStyle({fillOpacity:0.14, color:'#61758a', weight:1.5});
+              }
+            },
+            mouseout:() => refreshRegionBoundaries()
+          });
+        }
+      }).addTo(map);
+    })
+    .catch(error => console.warn(error.message));
+}
 
 function loadRegion(regionKey) {
   while(markerLayer.getLayers().length) markerLayer.removeLayer(markerLayer.getLayers()[0]);
@@ -769,6 +850,7 @@ function loadRegion(regionKey) {
     data = { label:'全台概覽 · 已完成區域', center:[23.8,121.0], zoom:8, markers:allM };
   }
   document.getElementById('regionInfo').textContent = data.label + ' · ' + data.markers.length + ' 個標點';
+  refreshRegionBoundaries();
 
   data.markers.forEach((m, idx) => {
     const color = colors[m.group] || '#95a5a6';
@@ -914,6 +996,7 @@ document.getElementById('regionSelect').addEventListener('change', function() {
 });
 
 legend.addTo(map);
+loadRegionBoundaries();
 loadRegion('all');
 </script>
 </body>
